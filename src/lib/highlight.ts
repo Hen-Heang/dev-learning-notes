@@ -69,8 +69,9 @@ export async function renderMarkdown(content: string): Promise<string> {
         lang: safeLang,
         theme: "github-dark",
       });
-      // Wrap so we can style / attach copy button
-      return `<div class="shiki-wrapper">${html}</div>`;
+      // Wrap so we can style / attach copy button + show language label
+      const langAttr = rawLang ? ` data-lang="${rawLang}"` : "";
+      return `<div class="shiki-wrapper"${langAttr}>${html}</div>`;
     } catch {
       // Fallback plain block
       return `<pre><code>${text}</code></pre>`;

@@ -40,19 +40,28 @@ export default async function NotePage({ params }: { params: Promise<{ slug: str
       <CodeCopy />
       <PageTransition>
         <div className="px-4 sm:px-6 py-6 sm:py-8 max-w-3xl mx-auto pb-safe">
-          {/* Back link */}
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 transition-colors mb-8"
-          >
-            <ChevronLeft size={15} />
-            All topics
-          </Link>
+          {/* Breadcrumb / back */}
+          <div className="flex items-center gap-2 mb-8 text-xs font-mono text-zinc-600">
+            <Link
+              href="/"
+              className="flex items-center gap-1 hover:text-zinc-400 transition-colors"
+            >
+              <ChevronLeft size={13} />
+              notes
+            </Link>
+            <span>/</span>
+            <span className="text-zinc-500">{slug}</span>
+          </div>
 
           {/* Title */}
-          <div className="flex items-center gap-4 mb-10">
-            <span className="text-4xl">{note.icon}</span>
-            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-100 leading-tight">{note.title}</h1>
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl">{note.icon}</span>
+              <h1 className="text-2xl sm:text-3xl font-bold text-zinc-100 leading-tight tracking-tight">
+                {note.title}
+              </h1>
+            </div>
+            <div className="h-px bg-linear-to-r from-emerald-400/30 via-zinc-700 to-transparent mt-6" />
           </div>
 
           {/* Content */}

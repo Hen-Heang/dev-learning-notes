@@ -16,22 +16,32 @@ export function NoteCard({ slug, title, description, icon, index }: NoteCardProp
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.06 }}
-      whileHover={{ y: -3, transition: { duration: 0.15 } }}
+      transition={{ type: "spring", stiffness: 350, damping: 28, delay: index * 0.06 }}
+      whileHover={{ y: -3, transition: { type: "spring", stiffness: 400, damping: 25 } }}
+      whileTap={{ scale: 0.97, transition: { type: "spring", stiffness: 500, damping: 30 } }}
     >
       <Link href={`/notes/${slug}`} className="block h-full">
-        <div className="h-full border border-zinc-800 rounded-xl p-5 bg-zinc-900 hover:border-zinc-600 hover:bg-zinc-800/60 transition-colors group">
+        <div className="relative h-full border border-zinc-800/70 rounded-xl p-5 bg-zinc-900/50 backdrop-blur-sm hover:border-zinc-600/80 hover:bg-zinc-800/40 transition-all duration-200 group overflow-hidden">
+          {/* Top shimmer on hover */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-emerald-400/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
           <div className="flex items-start gap-3">
-            <span className="text-3xl mt-0.5">{icon}</span>
-            <div className="min-w-0">
-              <h2 className="text-base font-semibold text-zinc-100 group-hover:text-white transition-colors">
+            <span className="text-2xl mt-0.5 shrink-0">{icon}</span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors leading-snug">
                 {title}
               </h2>
-              <p className="text-sm text-zinc-500 mt-1 leading-relaxed">{description}</p>
+              <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed line-clamp-2">{description}</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center text-xs text-zinc-600 group-hover:text-emerald-400 transition-colors">
-            <span>Open notes →</span>
+
+          <div className="mt-4 pt-3 border-t border-zinc-800/50 flex items-center justify-between">
+            <span className="text-[10px] font-mono text-zinc-700 group-hover:text-zinc-500 transition-colors">
+              /{slug}
+            </span>
+            <span className="text-[11px] font-mono text-zinc-600 group-hover:text-emerald-400 transition-colors">
+              open →
+            </span>
           </div>
         </div>
       </Link>

@@ -32,7 +32,7 @@ export function NoteSearch({ notes }: { notes: NoteMeta[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search topics..."
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-9 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-700 transition-colors"
+          className="w-full bg-zinc-900/60 backdrop-blur-sm border border-zinc-800/70 rounded-lg pl-9 pr-9 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-700/50 transition-all"
         />
         <AnimatePresence>
           {query && (
