@@ -46,6 +46,19 @@ export async function renderMarkdown(content: string): Promise<string> {
 
   const renderer = new Renderer();
 
+  // Rewrite markdown internal links so they work as Next.js routes
+  renderer.link = ({ href, title, tokens }) => {
+    const text = tokens.map((t) => ("raw" in t ? t.raw : "")).join("");
+    // ../README.md  →  /  (back to home)
+    if (href === "../README.md" || href === "../README") {
+      return `<a href="/">← Back</a>`;
+    }
+    // Any other relative .md link — strip extension (not used currently but safe)
+    const resolvedHref = href?.replace(/\.md$/, "") ?? "#";
+    const titleAttr = title ? ` title="${title}"` : "";
+    return `<a href="${resolvedHref}"${titleAttr}>${text}</a>`;
+  };
+
   renderer.code = ({ text, lang }) => {
     const rawLang = (lang ?? "").toLowerCase().trim();
     const resolvedLang = LANG_MAP[rawLang] ?? rawLang;
