@@ -4,7 +4,8 @@ import { useEffect } from "react";
 
 export function CodeCopy() {
   useEffect(() => {
-    const blocks = document.querySelectorAll<HTMLElement>("article pre");
+    // Target both shiki wrappers and plain pre blocks
+    const blocks = document.querySelectorAll<HTMLElement>("article .shiki-wrapper, article pre:not(.shiki-wrapper pre)");
 
     blocks.forEach((pre) => {
       // avoid duplicates
@@ -43,7 +44,7 @@ export function CodeCopy() {
       });
 
       btn.addEventListener("click", () => {
-        const code = pre.querySelector("code")?.innerText ?? "";
+        const code = pre.querySelector("code")?.innerText ?? pre.innerText ?? "";
         navigator.clipboard.writeText(code).then(() => {
           btn.textContent = "Copied!";
           btn.style.background = "#052e16";

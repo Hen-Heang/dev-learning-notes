@@ -1,5 +1,5 @@
 import { getAllNotes, getNoteContent } from "@/lib/notes";
-import { marked } from "marked";
+import { renderMarkdown } from "@/lib/highlight";
 import { PageTransition } from "@/components/PageTransition";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { CodeCopy } from "@/components/CodeCopy";
@@ -32,7 +32,7 @@ export default async function NotePage({ params }: { params: Promise<{ slug: str
     notFound();
   }
 
-  const html = await marked(note.content, { gfm: true, breaks: false });
+  const html = await renderMarkdown(note.content);
 
   return (
     <>

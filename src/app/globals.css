@@ -42,8 +42,28 @@ html {
 .prose blockquote { border-left: 3px solid #34d399; padding-left: 1rem; color: #71717a; margin: 1rem 0; font-style: italic; }
 .prose hr { border-color: #27272a; margin: 1.5rem 0; }
 .prose code:not(pre code) { background: #27272a; color: #34d399; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.82em; font-family: Consolas, monospace; word-break: break-word; }
-.prose pre { background: #18181b !important; border: 1px solid #27272a; border-radius: 10px; padding: 1rem; overflow-x: auto; margin-bottom: 1.25rem; font-size: 0.8rem; line-height: 1.65; max-width: 100%; }
-.prose pre code { background: transparent; color: #e4e4e7; font-family: Consolas, monospace; padding: 0; white-space: pre; }
+
+/* Shiki syntax-highlighted code blocks */
+.prose .shiki-wrapper { position: relative; margin-bottom: 1.25rem; }
+.prose .shiki-wrapper pre,
+.prose .shiki-wrapper .shiki {
+  margin: 0;
+  border: 1px solid #27272a;
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  font-family: Consolas, "Cascadia Code", "Fira Code", monospace;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+.prose .shiki-wrapper .shiki code { background: transparent; padding: 0; font-size: inherit; }
+.prose .shiki-wrapper .shiki .line { display: block; min-height: 1em; }
+
+/* Fallback plain pre (no language specified) */
+.prose pre:not(.shiki) { background: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 1rem; overflow-x: auto; margin-bottom: 1.25rem; font-size: 0.8rem; line-height: 1.65; max-width: 100%; }
+.prose pre:not(.shiki) code { background: transparent; color: #e4e4e7; font-family: Consolas, monospace; padding: 0; white-space: pre; }
 
 /* Tables: scrollable on mobile */
 .prose table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-collapse: collapse; margin-bottom: 1.25rem; font-size: 0.82rem; }
@@ -57,7 +77,8 @@ html {
   .prose { font-size: 0.9rem; }
   .prose h1 { font-size: 1.3rem; }
   .prose h2 { font-size: 1rem; }
-  .prose pre { font-size: 0.76rem; padding: 0.75rem; border-radius: 8px; }
+  .prose .shiki-wrapper .shiki { font-size: 0.74rem; padding: 0.75rem; border-radius: 8px; }
+  .prose pre:not(.shiki) { font-size: 0.74rem; padding: 0.75rem; border-radius: 8px; }
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
