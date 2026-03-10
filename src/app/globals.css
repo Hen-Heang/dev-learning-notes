@@ -28,32 +28,32 @@ html {
 }
 
 /* Markdown prose styles */
-.prose { color: #a1a1aa; max-width: none; }
-.prose h1 { color: #fafafa; font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; margin-top: 0; }
-.prose h2 { color: #e4e4e7; font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid #27272a; }
-.prose h3 { color: #d4d4d8; font-size: 0.95rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-.prose p { margin-bottom: 0.9rem; line-height: 1.7; }
+.prose { color: #a1a1aa; max-width: none; font-size: 1rem; line-height: 1.8; }
+.prose h1 { color: #fafafa; font-size: 1.875rem; font-weight: 700; margin-bottom: 1.1rem; margin-top: 0; letter-spacing: -0.01em; }
+.prose h2 { color: #e4e4e7; font-size: 1.35rem; font-weight: 600; margin-top: 2.25rem; margin-bottom: 0.85rem; padding-bottom: 0.5rem; border-bottom: 1px solid #27272a; letter-spacing: -0.01em; }
+.prose h3 { color: #d4d4d8; font-size: 1.1rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.6rem; }
+.prose p { margin-bottom: 1rem; line-height: 1.8; font-size: 1rem; }
 .prose a { color: #34d399; text-decoration: none; }
 .prose a:hover { text-decoration: underline; }
 .prose strong { color: #e4e4e7; font-weight: 600; }
-.prose ul { margin-bottom: 0.9rem; padding-left: 1.4rem; }
-.prose ol { margin-bottom: 0.9rem; padding-left: 1.4rem; }
-.prose li { margin-bottom: 0.3rem; line-height: 1.7; }
-.prose blockquote { border-left: 3px solid #34d399; padding-left: 1rem; color: #71717a; margin: 1rem 0; font-style: italic; }
-.prose hr { border-color: #27272a; margin: 1.5rem 0; }
-.prose code:not(pre code) { background: #27272a; color: #34d399; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.82em; font-family: Consolas, monospace; word-break: break-word; }
+.prose ul { margin-bottom: 1rem; padding-left: 1.5rem; }
+.prose ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+.prose li { margin-bottom: 0.4rem; line-height: 1.8; font-size: 1rem; }
+.prose blockquote { border-left: 3px solid #34d399; padding-left: 1.1rem; color: #71717a; margin: 1.25rem 0; font-style: italic; font-size: 1rem; }
+.prose hr { border-color: #27272a; margin: 1.75rem 0; }
+.prose code:not(pre code) { background: #27272a; color: #34d399; padding: 0.2rem 0.45rem; border-radius: 4px; font-size: 0.88em; font-family: Consolas, monospace; word-break: break-word; }
 
 /* Shiki syntax-highlighted code blocks */
-.prose .shiki-wrapper { position: relative; margin-bottom: 1.25rem; }
+.prose .shiki-wrapper { position: relative; margin-bottom: 1.5rem; }
 .prose .shiki-wrapper pre,
 .prose .shiki-wrapper .shiki {
   margin: 0;
   border: 1px solid #27272a;
   border-radius: 10px;
-  padding: 1.1rem 1.25rem;
+  padding: 1.25rem 1.5rem;
   overflow-x: auto;
-  font-size: 0.82rem;
-  line-height: 1.7;
+  font-size: 0.9rem;
+  line-height: 1.75;
   font-family: Consolas, "Cascadia Code", "Fira Code", monospace;
   max-width: 100%;
   -webkit-overflow-scrolling: touch;
@@ -62,23 +62,25 @@ html {
 .prose .shiki-wrapper .shiki .line { display: block; min-height: 1em; }
 
 /* Fallback plain pre (no language specified) */
-.prose pre:not(.shiki) { background: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 1rem; overflow-x: auto; margin-bottom: 1.25rem; font-size: 0.8rem; line-height: 1.65; max-width: 100%; }
+.prose pre:not(.shiki) { background: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 1.25rem 1.5rem; overflow-x: auto; margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.75; max-width: 100%; }
 .prose pre:not(.shiki) code { background: transparent; color: #e4e4e7; font-family: Consolas, monospace; padding: 0; white-space: pre; }
 
 /* Tables: scrollable on mobile */
-.prose table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-collapse: collapse; margin-bottom: 1.25rem; font-size: 0.82rem; }
+.prose table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.95rem; }
 .prose thead tr { border-bottom: 1px solid #27272a; }
-.prose th { color: #e4e4e7; font-weight: 600; padding: 0.45rem 0.65rem; text-align: left; white-space: nowrap; }
-.prose td { padding: 0.45rem 0.65rem; border-bottom: 1px solid #1f1f23; color: #a1a1aa; }
+.prose th { color: #e4e4e7; font-weight: 600; padding: 0.6rem 0.9rem; text-align: left; white-space: nowrap; }
+.prose td { padding: 0.6rem 0.9rem; border-bottom: 1px solid #1f1f23; color: #a1a1aa; }
 .prose tbody tr:hover td { background: #18181b; }
 
-/* Mobile font scale */
+/* Mobile font scale — keep readable, just slightly tighter */
 @media (max-width: 640px) {
-  .prose { font-size: 0.9rem; }
-  .prose h1 { font-size: 1.3rem; }
-  .prose h2 { font-size: 1rem; }
-  .prose .shiki-wrapper .shiki { font-size: 0.74rem; padding: 0.75rem; border-radius: 8px; }
-  .prose pre:not(.shiki) { font-size: 0.74rem; padding: 0.75rem; border-radius: 8px; }
+  .prose { font-size: 0.97rem; }
+  .prose h1 { font-size: 1.6rem; }
+  .prose h2 { font-size: 1.2rem; }
+  .prose h3 { font-size: 1rem; }
+  .prose .shiki-wrapper .shiki { font-size: 0.83rem; padding: 1rem 1.1rem; border-radius: 8px; }
+  .prose pre:not(.shiki) { font-size: 0.83rem; padding: 1rem 1.1rem; border-radius: 8px; }
+  .prose table { font-size: 0.88rem; }
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }

@@ -43,16 +43,16 @@ export default async function NotePage({ params }: { params: Promise<{ slug: str
           {/* Back link */}
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-6"
+            className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 transition-colors mb-8"
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={15} />
             All topics
           </Link>
 
           {/* Title */}
-          <div className="flex items-center gap-3 mb-8">
-            <span className="text-3xl">{note.icon}</span>
-            <h1 className="text-xl font-bold text-zinc-100">{note.title}</h1>
+          <div className="flex items-center gap-4 mb-10">
+            <span className="text-4xl">{note.icon}</span>
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-100 leading-tight">{note.title}</h1>
           </div>
 
           {/* Content */}
