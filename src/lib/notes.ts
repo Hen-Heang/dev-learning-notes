@@ -46,36 +46,32 @@ function normalizeTags(tags: unknown): string[] {
 // Try Supabase first, fall back to markdown files.
 export async function getAllNotes(): Promise<NoteMeta[]> {
   const fileNotes = getAllNotesFromFiles();
-  const { data, error } = await supabase
-    .from("notes")
-    .select("slug, title, description, category, tags")
-    .order("created_at", { ascending: true });
+  try {
+    const { data, error } = await supabase
+      .from("notes")
+      .select("slug, title, description, category, tags")
+      .order("created_at", { ascending: true });
 
-  if (!error && data && data.length > 0) {
-    const dbNotes = data.map((note) => ({
-      slug: note.slug,
-      title: note.title,
-      description: note.description ?? "",
-      icon: META[note.slug]?.icon ?? "note",
-      category: note.category ?? "",
-      tags: normalizeTags(note.tags),
-    }));
+    if (!error && data && data.length > 0) {
+      const dbNotes = data.map((note) => ({
+        slug: note.slug,
+        title: note.title,
+        description: note.description ?? "",
+        icon: META[note.slug]?.icon ?? "note",
+        category: note.category ?? "",
+        tags: normalizeTags(note.tags),
+      }));
 
-    const merged = new Map<string, NoteMeta>();
-
-    for (const note of dbNotes) {
-      merged.set(note.slug, note);
-    }
-
-    for (const note of fileNotes) {
-      if (!merged.has(note.slug)) {
-        merged.set(note.slug, note);
+      const merged = new Map<string, NoteMeta>();
+      for (const note of dbNotes) merged.set(note.slug, note);
+      for (const note of fileNotes) {
+        if (!merged.has(note.slug)) merged.set(note.slug, note);
       }
+      return Array.from(merged.values());
     }
-
-    return Array.from(merged.values());
+  } catch {
+    // Supabase unavailable (env vars not set at build time) — use files
   }
-
   return fileNotes;
 }
 
@@ -111,18 +107,22 @@ function getAllNotesFromFiles(): NoteMeta[] {
 export async function getNoteContent(
   slug: string
 ): Promise<{ content: string; title: string; icon: string }> {
-  const { data, error } = await supabase
-    .from("notes")
-    .select("content, title")
-    .eq("slug", slug)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("notes")
+      .select("content, title")
+      .eq("slug", slug)
+      .single();
 
-  if (!error && data) {
-    return {
-      content: data.content,
-      title: data.title,
-      icon: META[slug]?.icon ?? "note",
-    };
+    if (!error && data) {
+      return {
+        content: data.content,
+        title: data.title,
+        icon: META[slug]?.icon ?? "note",
+      };
+    }
+  } catch {
+    // Supabase unavailable — fall back to file
   }
 
   const filePath = path.join(NOTES_DIR, slug, "README.md");
