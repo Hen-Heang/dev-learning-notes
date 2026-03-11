@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
+import { TechIcon, getTechColor } from "@/components/TechIcon";
 
 interface NoteCardProps {
   slug: string;
   title: string;
   description: string;
-  icon: string;
   index: number;
 }
 
-export function NoteCard({ slug, title, description, icon, index }: NoteCardProps) {
+export function NoteCard({ slug, title, description, index }: NoteCardProps) {
+  const accentColor = getTechColor(slug);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -21,12 +23,16 @@ export function NoteCard({ slug, title, description, icon, index }: NoteCardProp
       whileTap={{ scale: 0.97, transition: { type: "spring", stiffness: 500, damping: 30 } }}
     >
       <Link href={`/notes/${slug}`} className="block h-full">
-        <div className="relative h-full border border-zinc-800/70 rounded-xl p-5 bg-zinc-900/50 backdrop-blur-sm hover:border-zinc-600/80 hover:bg-zinc-800/40 transition-all duration-200 group overflow-hidden">
-          {/* Top shimmer on hover */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-emerald-400/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="relative h-full border border-zinc-800/70 rounded-xl p-5 bg-zinc-900/50 backdrop-blur-sm hover:border-zinc-700/80 hover:bg-zinc-800/40 transition-all duration-200 group overflow-hidden">
+          <div
+            className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{ background: `linear-gradient(to right, transparent, ${accentColor}60, transparent)` }}
+          />
 
           <div className="flex items-start gap-3">
-            <span className="text-2xl mt-0.5 shrink-0">{icon}</span>
+            <div className="mt-0.5 p-2 rounded-lg bg-zinc-800/60 group-hover:bg-zinc-800 transition-colors shrink-0">
+              <TechIcon slug={slug} size={20} />
+            </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors leading-snug">
                 {title}
@@ -40,7 +46,7 @@ export function NoteCard({ slug, title, description, icon, index }: NoteCardProp
               /{slug}
             </span>
             <span className="text-[11px] font-mono text-zinc-600 group-hover:text-emerald-400 transition-colors">
-              open →
+              open -&gt;
             </span>
           </div>
         </div>

@@ -15,7 +15,9 @@ export function NoteSearch({ notes }: { notes: NoteMeta[] }) {
     return notes.filter(
       (n) =>
         n.title.toLowerCase().includes(q) ||
-        n.description.toLowerCase().includes(q)
+        n.description.toLowerCase().includes(q) ||
+        (n.category ?? "").toLowerCase().includes(q) ||
+        (n.tags ?? []).some((tag) => tag.toLowerCase().includes(q))
     );
   }, [query, notes]);
 
