@@ -10,7 +10,7 @@
     "import:notes": "node scripts/import-readmes-to-supabase.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.0",
+    "@supabase/supabase-js": "^2.99.1",
     "@types/marked": "^5.0.2",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",

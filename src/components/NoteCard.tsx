@@ -2,52 +2,83 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
+import { ArrowUpRight } from "lucide-react";
 import { TechIcon, getTechColor } from "@/components/TechIcon";
 
 interface NoteCardProps {
   slug: string;
   title: string;
   description: string;
+  icon: string;
   index: number;
 }
 
-export function NoteCard({ slug, title, description, index }: NoteCardProps) {
-  const accentColor = getTechColor(slug);
+export function NoteCard({ slug, title, description, icon, index }: NoteCardProps) {
+  const accentColor = getTechColor(icon || slug);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 350, damping: 28, delay: index * 0.06 }}
-      whileHover={{ y: -3, transition: { type: "spring", stiffness: 400, damping: 25 } }}
-      whileTap={{ scale: 0.97, transition: { type: "spring", stiffness: 500, damping: 30 } }}
+      transition={{
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
+        delay: index * 0.05,
+      }}
+      whileHover={{ y: -6 }}
+      className="h-full"
     >
-      <Link href={`/notes/${slug}`} className="block h-full">
-        <div className="relative h-full border border-zinc-800/70 rounded-xl p-5 bg-zinc-900/50 backdrop-blur-sm hover:border-zinc-700/80 hover:bg-zinc-800/40 transition-all duration-200 group overflow-hidden">
+      <Link href={`/notes/${slug}`} className="block h-full group">
+        <div className="relative h-full border border-zinc-800/60 rounded-[2rem] p-7 sm:p-8 bg-zinc-900/40 backdrop-blur-xl hover:bg-zinc-800/50 hover:border-emerald-500/30 transition-all duration-500 overflow-hidden flex flex-col shadow-2xl">
+          {/* Accent glow line at top */}
           <div
-            className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            style={{ background: `linear-gradient(to right, transparent, ${accentColor}60, transparent)` }}
+            className="absolute inset-x-0 top-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+            style={{ background: `linear-gradient(to right, transparent, ${accentColor}, transparent)` }}
           />
 
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 p-2 rounded-lg bg-zinc-800/60 group-hover:bg-zinc-800 transition-colors shrink-0">
-              <TechIcon slug={slug} size={20} />
+          {/* Background Glow */}
+          <div 
+            className="absolute -right-4 -top-4 w-24 h-24 blur-[50px] rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-700"
+            style={{ backgroundColor: accentColor }}
+          />
+
+          <div className="relative flex items-center gap-5 mb-6">
+            <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-center group-hover:scale-110 group-hover:border-emerald-500/40 transition-all duration-500 shadow-inner">
+              <TechIcon name={icon} size={28} />
             </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors leading-snug">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-xl font-black text-zinc-100 group-hover:text-white transition-colors leading-tight truncate tracking-tight">
                 {title}
               </h2>
-              <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed line-clamp-2">{description}</p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-widest">Module</span>
+                <div className="w-1 h-1 rounded-full bg-zinc-800" />
+                <span className="text-[11px] font-mono text-emerald-500/70 font-bold">/{slug}</span>
+              </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-zinc-800/50 flex items-center justify-between">
-            <span className="text-[10px] font-mono text-zinc-700 group-hover:text-zinc-500 transition-colors">
-              /{slug}
-            </span>
-            <span className="text-[11px] font-mono text-zinc-600 group-hover:text-emerald-400 transition-colors">
-              open -&gt;
-            </span>
+          <p className="relative text-[15px] sm:text-base text-zinc-400 leading-relaxed line-clamp-3 mb-8 flex-1 font-medium">
+            {description}
+          </p>
+
+          <div className="relative mt-auto pt-6 border-t border-zinc-800/60 flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-mono font-black text-zinc-700 uppercase tracking-tighter group-hover:text-zinc-500 transition-colors">
+                Deployment Ready
+              </span>
+              <span className="text-xs font-mono font-bold text-zinc-500">
+                v2026.03
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm font-black text-zinc-400 group-hover:text-emerald-400 transition-all duration-300">
+              <span>EXPLORE</span>
+              <div className="p-1.5 rounded-lg bg-zinc-950 border border-zinc-800 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/10 transition-all">
+                <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
+              </div>
+            </div>
           </div>
         </div>
       </Link>

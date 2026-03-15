@@ -78,5 +78,15 @@ export async function renderMarkdown(content: string): Promise<string> {
     }
   };
 
+  renderer.heading = ({ text, depth, tokens }) => {
+    const rawText = tokens.map((t) => ("raw" in t ? t.raw : "")).join("");
+    const id = rawText.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const Tag = `h${depth}` as const;
+    if (depth === 2 || depth === 3) {
+      return `<${Tag} id="${id}">${text}</${Tag}>`;
+    }
+    return `<${Tag}>${text}</${Tag}>`;
+  };
+
   return marked(content, { renderer, gfm: true, breaks: false }) as Promise<string>;
 }
