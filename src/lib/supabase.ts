@@ -1,31 +1,68 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// Lazy singleton — only created when first used, not at module load time
-let _client: SupabaseClient | null = null;
+type TypedClient = SupabaseClient;
 
-function getClient(): SupabaseClient {
-  if (!_client) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) throw new Error("Supabase env vars are not configured");
-    _client = createClient(url, key);
-  }
-  return _client;
+let browserClient: TypedClient | null = null;
+let adminClient: TypedClient | null = null;
+
+function getEnv(name: string) {
+  return process.env[name];
 }
 
-// Public client proxy — safe to import anywhere, initialised on first call
-export const supabase = new Proxy({} as SupabaseClient, {
+function createBrowserClient(): TypedClient {
+  const url = getEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const anonKey = getEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+
+  if (!url || !anonKey) {
+    throw new Error("Supabase public env vars are not configured");
+  }
+
+  return createClient(url, anonKey);
+}
+
+function createAdminClient(): TypedClient {
+  const url = getEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const serviceKey =
+    getEnv("SUPABASE_SERVICE_ROLE_KEY") ?? getEnv("SUPABASE_SECRET_KEY");
+  const anonKey = getEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+
+  if (!url || (!serviceKey && !anonKey)) {
+    throw new Error("Supabase server env vars are not configured");
+  }
+
+  return createClient(url, serviceKey || anonKey!);
+}
+
+function getBrowserClient(): TypedClient {
+  if (!browserClient) {
+    browserClient = createBrowserClient();
+  }
+
+  return browserClient;
+}
+
+function getAdminClient(): TypedClient {
+  if (!adminClient) {
+    adminClient = createAdminClient();
+  }
+
+  return adminClient;
+}
+
+export const supabase = new Proxy({} as TypedClient, {
   get(_, prop) {
-    return getClient()[prop as keyof SupabaseClient];
+    return getBrowserClient()[prop as keyof TypedClient];
   },
 });
 
-// Server-only client — uses secret key, bypasses RLS
-export function createServerClient(): SupabaseClient {
-  const url       = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const secretKey = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !secretKey) throw new Error("SUPABASE_SECRET_KEY is not set");
-  return createClient(url, secretKey);
+export const supabaseAdmin = new Proxy({} as TypedClient, {
+  get(_, prop) {
+    return getAdminClient()[prop as keyof TypedClient];
+  },
+});
+
+export function createServerClient(): TypedClient {
+  return createAdminClient();
 }
 
 export interface Note {

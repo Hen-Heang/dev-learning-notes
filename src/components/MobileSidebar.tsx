@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, Settings } from "lucide-react";
+import { Menu, NotebookPen, Settings, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TechIcon } from "@/components/TechIcon";
 import { BrandLockup } from "@/components/BrandLockup";
@@ -78,7 +78,7 @@ export function MobileSidebar({ notes }: { notes: NavItem[] }) {
                           : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900"
                       )}
                     >
-                      <TechIcon slug={note.slug} size={16} />
+                      <TechIcon name={note.icon} size={16} />
                       <span className="truncate">{note.title}</span>
                       {active && (
                         <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
@@ -88,6 +88,20 @@ export function MobileSidebar({ notes }: { notes: NavItem[] }) {
                 );
               })}
             </nav>
+
+            <div className="px-3 pb-4">
+              <Link href="/#workspace" onClick={() => setOpen(false)}>
+                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-4 text-zinc-200">
+                  <div className="mb-2 flex items-center gap-2">
+                    <NotebookPen size={16} className="text-emerald-400" />
+                    <span className="text-sm font-semibold">Quick Notes</span>
+                  </div>
+                  <p className="text-xs leading-5 text-zinc-400">
+                    Add and update personal notes from the dashboard workspace.
+                  </p>
+                </div>
+              </Link>
+            </div>
 
             <div className="px-3 py-4 border-t border-zinc-800 pb-safe space-y-1">
               <Link

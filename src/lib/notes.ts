@@ -1,9 +1,10 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase";
 
 export interface NoteMeta {
+  id?: string;
   slug: string;
   title: string;
   description: string;
@@ -36,6 +37,7 @@ function formatTitle(slug: string): string {
     projects: "Projects",
     roadmap: "Korea Adaptation Roadmap",
   };
+
   return map[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1);
 }
 
@@ -43,44 +45,13 @@ function normalizeTags(tags: unknown): string[] {
   return Array.isArray(tags) ? tags.filter((tag): tag is string => typeof tag === "string") : [];
 }
 
-// Try Supabase first, fall back to markdown files.
-export async function getAllNotes(): Promise<NoteMeta[]> {
-  const fileNotes = getAllNotesFromFiles();
-  try {
-    const { data, error } = await supabase
-      .from("notes")
-      .select("slug, title, description, category, tags")
-      .order("created_at", { ascending: true });
-
-    if (!error && data && data.length > 0) {
-      const dbNotes = data.map((note) => ({
-        slug: note.slug,
-        title: note.title,
-        description: note.description ?? "",
-        icon: META[note.slug]?.icon ?? "note",
-        category: note.category ?? "",
-        tags: normalizeTags(note.tags),
-      }));
-
-      const merged = new Map<string, NoteMeta>();
-      for (const note of dbNotes) merged.set(note.slug, note);
-      for (const note of fileNotes) {
-        if (!merged.has(note.slug)) merged.set(note.slug, note);
-      }
-      return Array.from(merged.values());
-    }
-  } catch {
-    // Supabase unavailable (env vars not set at build time) — use files
-  }
-  return fileNotes;
+function iconFromRow(row: { slug?: string | null; tags?: string[] | null; category?: string | null }) {
+  if (row.tags?.[0]) return row.tags[0];
+  if (row.slug && META[row.slug]) return META[row.slug].icon;
+  return row.category ?? "common";
 }
 
-// Sync: read from markdown files only.
 export function getAllNotesSync(): NoteMeta[] {
-  return getAllNotesFromFiles();
-}
-
-function getAllNotesFromFiles(): NoteMeta[] {
   const dirs = fs.readdirSync(NOTES_DIR).filter((dirName) => {
     const full = path.join(NOTES_DIR, dirName);
     return fs.statSync(full).isDirectory() && fs.existsSync(path.join(full, "README.md"));
@@ -90,7 +61,7 @@ function getAllNotesFromFiles(): NoteMeta[] {
     const filePath = path.join(NOTES_DIR, slug, "README.md");
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data } = matter(raw);
-    const meta = META[slug] ?? { description: "", icon: "note" };
+    const meta = META[slug] ?? { description: "", icon: "common" };
 
     return {
       slug,
@@ -103,36 +74,113 @@ function getAllNotesFromFiles(): NoteMeta[] {
   });
 }
 
-// Get single note content. Try Supabase first, then fall back to file.
+export async function getAllNotes(): Promise<NoteMeta[]> {
+  const fileNotes = getAllNotesSync();
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("notes")
+      .select("id, slug, title, description, category, tags")
+      .order("created_at", { ascending: true });
+
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) return fileNotes;
+
+    const merged = new Map<string, NoteMeta>();
+
+    for (const row of data) {
+      merged.set(row.slug, {
+        id: row.id,
+        slug: row.slug,
+        title: row.title,
+        description: row.description ?? "",
+        icon: iconFromRow(row),
+        category: row.category ?? undefined,
+        tags: row.tags ?? [],
+      });
+    }
+
+    for (const note of fileNotes) {
+      if (!merged.has(note.slug)) {
+        merged.set(note.slug, note);
+      }
+    }
+
+    return Array.from(merged.values());
+  } catch {
+    return fileNotes;
+  }
+}
+
 export async function getNoteContent(
   slug: string
-): Promise<{ content: string; title: string; icon: string }> {
+): Promise<{ content: string; title: string; icon: string; description: string }> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("notes")
-      .select("content, title")
+      .select("title, description, category, tags, content")
       .eq("slug", slug)
       .single();
 
-    if (!error && data) {
-      return {
-        content: data.content,
-        title: data.title,
-        icon: META[slug]?.icon ?? "note",
-      };
-    }
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error(`Note not found: ${slug}`);
+
+    return {
+      content: data.content ?? "",
+      title: data.title,
+      description: data.description ?? "",
+      icon: iconFromRow({ slug, tags: data.tags ?? [], category: data.category }),
+    };
   } catch {
-    // Supabase unavailable — fall back to file
+    const filePath = path.join(NOTES_DIR, slug, "README.md");
+    const raw = fs.readFileSync(filePath, "utf-8");
+    const { content, data } = matter(raw);
+    const meta = META[slug] ?? { description: "", icon: "common" };
+
+    return {
+      content,
+      title: (data.title as string) ?? formatTitle(slug),
+      description: (data.description as string) ?? meta.description,
+      icon: meta.icon,
+    };
   }
+}
 
-  const filePath = path.join(NOTES_DIR, slug, "README.md");
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { content, data: frontmatter } = matter(raw);
-  const meta = META[slug] ?? { description: "", icon: "note" };
+export async function saveNote(
+  slug: string,
+  content: string,
+  meta: Partial<NoteMeta>
+): Promise<void> {
+  const existingTags = meta.tags ?? [];
+  const nextTags = meta.icon
+    ? [meta.icon, ...existingTags.filter((tag) => tag !== meta.icon)]
+    : existingTags;
 
-  return {
+  const payload: Record<string, unknown> = {
+    slug,
     content,
-    title: (frontmatter.title as string) ?? formatTitle(slug),
-    icon: meta.icon,
+    title: meta.title,
+    description: meta.description,
+    category: meta.category,
+    tags: nextTags.length > 0 ? nextTags : undefined,
   };
+
+  const { error } = await supabaseAdmin
+    .from("notes")
+    .upsert(payload, { onConflict: "slug" });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function deleteNote(slug: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from("notes")
+    .delete()
+    .eq("slug", slug);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
