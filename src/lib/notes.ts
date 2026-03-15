@@ -52,6 +52,11 @@ function iconFromRow(row: { slug?: string | null; tags?: string[] | null; catego
 }
 
 export function getAllNotesSync(): NoteMeta[] {
+  try {
+    if (!fs.existsSync(NOTES_DIR)) return [];
+  } catch {
+    return [];
+  }
   const dirs = fs.readdirSync(NOTES_DIR).filter((dirName) => {
     const full = path.join(NOTES_DIR, dirName);
     return fs.statSync(full).isDirectory() && fs.existsSync(path.join(full, "README.md"));

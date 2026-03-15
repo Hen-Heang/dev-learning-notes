@@ -18,14 +18,18 @@ export interface StudyTask {
 }
 
 export async function getTasksAction(): Promise<StudyTask[]> {
-  const { data, error } = await supabaseAdmin
-    .from("study_tasks")
-    .select("*")
-    .order("sort_order")
-    .order("created_at");
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("study_tasks")
+      .select("*")
+      .order("sort_order")
+      .order("created_at");
 
-  if (error) throw new Error(error.message);
-  return (data ?? []) as StudyTask[];
+    if (error) throw new Error(error.message);
+    return (data ?? []) as StudyTask[];
+  } catch {
+    return [];
+  }
 }
 
 export async function createTaskAction(input: {

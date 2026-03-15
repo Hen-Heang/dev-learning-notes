@@ -27,21 +27,6 @@ const NEXT: Record<TaskStatus, TaskStatus | null> = { todo: "doing", doing: "don
 
 const EMPTY_FORM = { title: "", phase: "", category: "", notes: "" };
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-function StatusBadge({ status }: { status: TaskStatus }) {
-  const styles: Record<TaskStatus, string> = {
-    todo:  "bg-zinc-800 text-zinc-400 border-zinc-700/50",
-    doing: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    done:  "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  };
-  return (
-    <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border", styles[status])}>
-      {status}
-    </span>
-  );
-}
-
 interface CardProps {
   task: StudyTask;
   onOptimisticUpdate: (id: string, patch: Partial<StudyTask>) => void;

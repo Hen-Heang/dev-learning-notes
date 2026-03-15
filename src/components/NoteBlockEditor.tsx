@@ -288,7 +288,6 @@ function BlockItem({
   onDelete, onAddAfter, onTypeChange,
 }: BlockItemProps) {
   const [draft, setDraft] = useState(block.raw);
-  useEffect(() => { if (!isEditing) setDraft(block.raw); }, [block.raw, isEditing]);
 
   const blockType = getBlockType(block.raw);
   const isCode = blockType === "code";
@@ -604,6 +603,7 @@ export function NoteBlockEditor({
               transition={{ duration: 0.15 }}
             >
               <BlockItem
+                key={editingId === block.id ? `${block.id}:editing` : `${block.id}:view`}
                 block={block}
                 isEditing={editingId === block.id}
                 onStartEdit={() => setEditingId(block.id)}

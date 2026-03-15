@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/cn";
 import { List } from "lucide-react";
 
@@ -11,22 +11,19 @@ interface TocItem {
 }
 
 export function TableOfContents({ html }: { html: string }) {
-  const [toc, setToc] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string>("");
 
-  useEffect(() => {
+  const toc = useMemo<TocItem[]>(() => {
     // Extract headings from the rendered HTML (since we're on client side)
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
     const headings = Array.from(doc.querySelectorAll("h2, h3"));
-    
-    const items = headings.map((h) => ({
+
+    return headings.map((h) => ({
       id: h.id || h.textContent?.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-") || "",
       text: h.textContent || "",
       level: parseInt(h.tagName.substring(1)),
     }));
-    
-    setToc(items);
   }, [html]);
 
   useEffect(() => {
