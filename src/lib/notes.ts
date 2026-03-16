@@ -24,6 +24,7 @@ const META: Record<string, { description: string; icon: string }> = {
   jquery: { description: "DOM, AJAX patterns, Form handling", icon: "jquery" },
   projects: { description: "Full-stack project references", icon: "projects" },
   roadmap: { description: "Step-by-step Korea adaptation study plan", icon: "roadmap" },
+  "egov-sample": { description: "eGovFramework 기반 화면 개발 전체 흐름 가이드", icon: "egov-sample" },
 };
 
 function formatTitle(slug: string): string {
@@ -36,6 +37,7 @@ function formatTitle(slug: string): string {
     jquery: "jQuery & AJAX",
     projects: "Projects",
     roadmap: "Korea Adaptation Roadmap",
+    "egov-sample": "화면 개발 샘플 가이드",
   };
 
   return map[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1);

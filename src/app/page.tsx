@@ -18,14 +18,14 @@ export default async function Home() {
           <span>Knowledge Base 2026</span>
         </div>
 
-        <h1 className="text-5xl sm:text-7xl font-black text-white mb-8 tracking-tight leading-[1.05] text-balance">
+        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white mb-8 tracking-tight leading-[1.05] text-balance">
           Master the Korean <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500">
             Enterprise Stack.
           </span>
         </h1>
 
-        <p className="text-zinc-400 text-xl leading-relaxed max-w-2xl mb-10 font-medium">
+        <p className="text-zinc-400 text-base sm:text-xl leading-relaxed max-w-2xl mb-10 font-medium">
           A curated collection of practical notes for the standard Korean IT ecosystem.
           Focusing on <span className="text-emerald-400/90">stability</span>,{" "}
           <span className="text-emerald-400/90">scalability</span>, and{" "}
@@ -41,7 +41,7 @@ export default async function Home() {
           ].map((item) => (
             <div
               key={item.label}
-              className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-zinc-900/40 border border-zinc-800/40 text-base text-zinc-200 backdrop-blur-md hover:border-emerald-500/30 transition-all duration-300 shadow-xl"
+              className="flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl bg-zinc-900/40 border border-zinc-800/40 text-sm sm:text-base text-zinc-200 backdrop-blur-md hover:border-emerald-500/30 transition-all duration-300 shadow-xl"
             >
               <span className="text-lg">{item.icon}</span>
               <span className="font-bold tracking-tight">{item.label}</span>

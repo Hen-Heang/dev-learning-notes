@@ -4,21 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/cn";
 import { List } from "lucide-react";
 
-interface TocItem {
-  id: string;
-  text: string;
-  level: number;
-}
-
-export function TableOfContents({ html }: { html: string }) {
+export function TableOfContents({ html, mobile = false }: { html: string; mobile?: boolean }) {
   const [activeId, setActiveId] = useState<string>("");
+  const toc = useMemo(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
 
-  const toc = useMemo<TocItem[]>(() => {
-    // Extract headings from the rendered HTML (since we're on client side)
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
     const headings = Array.from(doc.querySelectorAll("h2, h3"));
-
     return headings.map((h) => ({
       id: h.id || h.textContent?.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-") || "",
       text: h.textContent || "",
@@ -48,7 +43,7 @@ export function TableOfContents({ html }: { html: string }) {
   if (toc.length === 0) return null;
 
   return (
-    <nav className="hidden xl:block sticky top-24 w-64 shrink-0 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto pr-4 scrollbar-hide">
+    <nav className={mobile ? "w-full" : "hidden xl:block sticky top-24 w-64 shrink-0 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto pr-4 scrollbar-hide"}>
       <div className="flex items-center gap-2 mb-4 text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">
         <List size={14} />
         Table of Contents
@@ -58,9 +53,9 @@ export function TableOfContents({ html }: { html: string }) {
         {/* Active line indicator */}
         <div className="absolute left-0 top-0 bottom-0 w-px bg-zinc-800" />
         
-        {toc.map((item) => (
-          <li 
-            key={item.id} 
+        {toc.map((item, index) => (
+          <li
+            key={`${item.id}-${index}`}
             className={cn(
               "group relative pl-4 transition-all duration-200",
               item.level === 3 ? "ml-4" : ""
