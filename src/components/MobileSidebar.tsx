@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,6 +9,7 @@ import { Menu, NotebookPen, Settings, X, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TechIcon } from "@/components/TechIcon";
 import { BrandLockup } from "@/components/BrandLockup";
+import { getEmptyNoteOrder, getStoredNoteOrder, orderNotes, subscribeToNoteOrder } from "@/lib/note-order";
 
 interface NavItem {
   slug: string;
@@ -19,6 +20,8 @@ interface NavItem {
 export function MobileSidebar({ notes }: { notes: NavItem[] }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const savedOrder = useSyncExternalStore(subscribeToNoteOrder, getStoredNoteOrder, getEmptyNoteOrder);
+  const orderedNotes = useMemo(() => orderNotes(notes, savedOrder), [notes, savedOrder]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -66,7 +69,7 @@ export function MobileSidebar({ notes }: { notes: NavItem[] }) {
             </div>
 
             <nav className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
-              {notes.map((note) => {
+              {orderedNotes.map((note) => {
                 const active = pathname === `/notes/${note.slug}`;
 
                 return (

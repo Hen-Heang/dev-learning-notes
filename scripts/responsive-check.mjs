@@ -1,4 +1,4 @@
-const { chromium, devices } = require("playwright");
+import { chromium, devices } from "playwright";
 
 async function capture(page, url, outputPath, waitForSelector) {
   await page.goto(url, { waitUntil: "networkidle", timeout: 120000 });

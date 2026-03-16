@@ -3,18 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { Settings, LayoutGrid, ChevronRight, NotebookPen, PlusSquare, Plus, Loader2 } from "lucide-react";
+import {
+  Settings,
+  LayoutGrid,
+  NotebookPen,
+  PlusSquare,
+  Plus,
+  Loader2,
+} from "lucide-react";
 import { useFormStatus } from "react-dom";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/cn";
-import { TechIcon, getTechColor } from "@/components/TechIcon";
 import { BrandLockup } from "@/components/BrandLockup";
 import { createNoteAction } from "@/app/actions/notes";
+import type { NavItem } from "@/components/SortableNoteList";
 
-interface NavItem {
-  slug: string;
-  title: string;
-  icon: string;
-}
+// Load dnd-kit only on client — prevents Turbopack SSR chunk errors
+const SortableNoteList = dynamic(
+  () => import("@/components/SortableNoteList").then((m) => m.SortableNoteList),
+  { ssr: false }
+);
 
 interface SidebarProps {
   notes: NavItem[];
@@ -22,7 +30,6 @@ interface SidebarProps {
 
 function CreateNoteButton() {
   const { pending } = useFormStatus();
-
   return (
     <button
       type="submit"
@@ -79,52 +86,7 @@ export function Sidebar({ notes }: SidebarProps) {
             </div>
           </div>
 
-          <nav className="space-y-1">
-            {notes.map((note) => {
-              const active = pathname === `/notes/${note.slug}`;
-              const color = getTechColor(note.icon || note.slug);
-
-              return (
-                <Link key={note.slug} href={`/notes/${note.slug}`}>
-                  <motion.div
-                    whileHover={{ x: 3 }}
-                    transition={{ duration: 0.15 }}
-                    className={cn(
-                      "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 border border-transparent",
-                      active
-                        ? "bg-zinc-900/80 text-zinc-100 border-zinc-800 shadow-sm"
-                        : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/30"
-                    )}
-                  >
-                    <TechIcon
-                      name={note.icon}
-                      className={cn(
-                        "transition-transform duration-300",
-                        active
-                          ? "scale-110"
-                          : "group-hover:scale-110 opacity-70 group-hover:opacity-100"
-                      )}
-                      size={16}
-                    />
-                    <span className="truncate font-medium">{note.title}</span>
-
-                    {active ? (
-                      <motion.div
-                        layoutId="sidebar-active"
-                        className="ml-auto w-1.5 h-1.5 rounded-full shrink-0"
-                        style={{ backgroundColor: color }}
-                      />
-                    ) : (
-                      <ChevronRight
-                        size={14}
-                        className="ml-auto opacity-0 -translate-x-2 group-hover:opacity-40 group-hover:translate-x-0 transition-all duration-300"
-                      />
-                    )}
-                  </motion.div>
-                </Link>
-              );
-            })}
-          </nav>
+          <SortableNoteList notes={notes} />
         </div>
 
         <div>

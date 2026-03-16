@@ -838,3 +838,37 @@ insert into public.study_tasks (title, phase, category, notes, status, sort_orde
   ('JSP, JSTL & jQuery',   'Phase 03', 'Frontend Legacy', 'Server-side templating with JSTL tags. AJAX patterns with jQuery.',                'doing', 3),
   ('CI/CD & Cloud',         'Phase 04', 'Deployment',      'Pipeline setup, containerisation, and cloud deployment automation.',               'todo',  4)
 on conflict do nothing;
+
+
+-- ============================================================
+-- news_bookmarks  (Saved articles for the dashboard)
+-- ============================================================
+
+create table if not exists public.news_bookmarks (
+  id uuid primary key default gen_random_uuid(),
+  news_id text not null unique,
+  title text not null,
+  url text not null,
+  source text not null,
+  tag text,
+  points integer,
+  published_at timestamptz,
+  reading_time integer,
+  topics text[] not null default '{}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.news_bookmarks enable row level security;
+
+drop policy if exists "public read news bookmarks" on public.news_bookmarks;
+create policy "public read news bookmarks"
+  on public.news_bookmarks for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "service role full access news bookmarks" on public.news_bookmarks;
+create policy "service role full access news bookmarks"
+  on public.news_bookmarks for all
+  to service_role
+  using (true) with check (true);

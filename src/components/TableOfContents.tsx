@@ -6,18 +6,19 @@ import { List } from "lucide-react";
 
 export function TableOfContents({ html, mobile = false }: { html: string; mobile?: boolean }) {
   const [activeId, setActiveId] = useState<string>("");
-  const toc = useMemo(() => {
-    if (typeof window === "undefined") {
-      return [];
-    }
 
+  const toc = useMemo(() => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
     const headings = Array.from(doc.querySelectorAll("h2, h3"));
-    return headings.map((h) => ({
-      id: h.id || h.textContent?.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-") || "",
-      text: h.textContent || "",
-      level: parseInt(h.tagName.substring(1)),
+
+    return headings.map((heading) => ({
+      id:
+        heading.id ||
+        heading.textContent?.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-") ||
+        "",
+      text: heading.textContent || "",
+      level: parseInt(heading.tagName.substring(1)),
     }));
   }, [html]);
 
@@ -33,26 +34,31 @@ export function TableOfContents({ html, mobile = false }: { html: string; mobile
     );
 
     const headingElements = document.querySelectorAll("h2, h3");
-    headingElements.forEach((el) => observer.observe(el));
+    headingElements.forEach((element) => observer.observe(element));
 
     return () => {
-      headingElements.forEach((el) => observer.unobserve(el));
+      headingElements.forEach((element) => observer.unobserve(element));
     };
   }, [toc]);
 
   if (toc.length === 0) return null;
 
   return (
-    <nav className={mobile ? "w-full" : "hidden xl:block sticky top-24 w-64 shrink-0 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto pr-4 scrollbar-hide"}>
+    <nav
+      className={
+        mobile
+          ? "w-full"
+          : "hidden xl:block sticky top-24 w-64 shrink-0 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto pr-4 scrollbar-hide"
+      }
+    >
       <div className="flex items-center gap-2 mb-4 text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">
         <List size={14} />
         Table of Contents
       </div>
-      
+
       <ul className="space-y-1 relative">
-        {/* Active line indicator */}
         <div className="absolute left-0 top-0 bottom-0 w-px bg-zinc-800" />
-        
+
         {toc.map((item, index) => (
           <li
             key={`${item.id}-${index}`}
@@ -61,16 +67,17 @@ export function TableOfContents({ html, mobile = false }: { html: string; mobile
               item.level === 3 ? "ml-4" : ""
             )}
           >
-            {/* Indicator Dot */}
-            <div className={cn(
-              "absolute left-[-0.5px] top-1/2 -translate-y-1/2 w-px h-full bg-transparent group-hover:bg-zinc-700 transition-colors",
-              activeId === item.id ? "bg-emerald-500 h-full w-[2px] z-10" : ""
-            )} />
-            
+            <div
+              className={cn(
+                "absolute left-[-0.5px] top-1/2 -translate-y-1/2 w-px h-full bg-transparent group-hover:bg-zinc-700 transition-colors",
+                activeId === item.id ? "bg-emerald-500 h-full w-[2px] z-10" : ""
+              )}
+            />
+
             <a
               href={`#${item.id}`}
-              onClick={(e) => {
-                e.preventDefault();
+              onClick={(event) => {
+                event.preventDefault();
                 document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth" });
                 setActiveId(item.id);
               }}

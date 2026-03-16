@@ -3,6 +3,7 @@ import { getTasksAction } from "@/app/actions/tasks";
 import { NoteSearch } from "@/components/NoteSearch";
 import { QuickNotesWorkspace } from "@/components/QuickNotesWorkspace";
 import { StudyTasks } from "@/components/StudyTasks";
+import { TechNewsFeed } from "@/components/TechNewsFeed";
 import { Sparkles, Terminal } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +51,11 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 sm:gap-16">
+      <div className="mt-16 sm:mt-20">
+        <TechNewsFeed />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 sm:gap-16 mt-16 sm:mt-24">
         <div className="lg:col-span-8">
           <div className="flex items-end justify-between mb-10 border-b border-zinc-800/60 pb-6">
             <div>
@@ -150,6 +155,7 @@ export default async function Home() {
       <div className="mt-20 sm:mt-32">
         <QuickNotesWorkspace />
       </div>
+
     </div>
   );
 }

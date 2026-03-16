@@ -1,21 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateStructuredStudyOutput } from "@/lib/openai-study";
 
+type AskNoteSection = {
+  title: string;
+  body: string;
+};
+
 type AskNoteResponse = {
-  answer: string;
+  summary: string;
+  sections: AskNoteSection[];
   takeaways: string[];
 };
 
 const ASK_NOTE_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["answer", "takeaways"],
+  required: ["summary", "sections", "takeaways"],
   properties: {
-    answer: { type: "string" },
+    summary: { type: "string" },
+    sections: {
+      type: "array",
+      minItems: 2,
+      maxItems: 4,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["title", "body"],
+        properties: {
+          title: { type: "string" },
+          body: { type: "string" },
+        },
+      },
+    },
     takeaways: {
       type: "array",
       minItems: 3,
-      maxItems: 3,
+      maxItems: 4,
       items: { type: "string" },
     },
   },
@@ -37,9 +57,15 @@ export async function POST(req: NextRequest) {
       schema: ASK_NOTE_SCHEMA,
       instructions: `You are a senior study coach for a developer learning Java, Spring Boot, MyBatis, SQL, JSP, jQuery, and Korean enterprise application patterns.
 Answer only from the supplied note content.
-Keep the explanation concrete, beginner-friendly, and technically correct.
+Organize the answer for easy study.
+Use short plain-English explanations.
+Do not write markdown markers like ###, **, or bullet symbols inside the text fields.
 If the note does not fully answer the question, say that clearly instead of inventing details.
-Write concise English.`,
+
+Output format rules:
+- summary: 2 to 4 short sentences
+- sections: 2 to 4 sections with a short title and a compact body
+- takeaways: 3 to 4 short actionable reminders`,
       input: `Note title: ${title}
 
 Learner question:

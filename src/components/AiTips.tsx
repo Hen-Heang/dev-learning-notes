@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles, Loader2, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Tip {
@@ -18,14 +18,24 @@ const CACHE_KEY = (title: string) => `ai_tips_${title.toLowerCase().replace(/\s+
 
 export function AiTips({ noteTitle, noteContent }: AiTipsProps) {
   const cacheKey = CACHE_KEY(noteTitle);
-  const cached = typeof window !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
-  const cachedTips: Tip[] = cached ? JSON.parse(cached) : [];
 
-  const [tips, setTips] = useState<Tip[]>(cachedTips);
+  // Always start with empty state to match server render — load cache after mount
+  const [tips, setTips] = useState<Tip[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const [generated, setGenerated] = useState(cachedTips.length > 0);
+  const [generated, setGenerated] = useState(false);
+
+  useEffect(() => {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      const parsed: Tip[] = JSON.parse(cached);
+      if (parsed.length > 0) {
+        setTips(parsed);
+        setGenerated(true);
+      }
+    }
+  }, [cacheKey]);
 
   const fetchTips = async (bustCache = false) => {
     if (!bustCache && tips.length > 0) return;
@@ -51,21 +61,21 @@ export function AiTips({ noteTitle, noteContent }: AiTipsProps) {
   };
 
   return (
-    <div className="rounded-2xl bg-zinc-950/60 border border-zinc-800/60 overflow-hidden">
+    <div className="rounded-2xl bg-zinc-950/60 border border-zinc-800/60 overflow-hidden w-full max-w-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800/40">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20">
+      <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-zinc-800/40">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20 shrink-0">
             <Sparkles size={13} className="text-violet-400" />
           </div>
-          <span className="text-[11px] font-mono font-black uppercase tracking-[0.18em] text-zinc-400">
+          <span className="text-[10px] sm:text-[11px] font-mono font-black uppercase tracking-[0.18em] text-zinc-400 truncate">
             AI Tips
           </span>
         </div>
         {generated && !loading && (
           <button
             onClick={() => fetchTips(true)}
-            className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800/50 transition-all"
+            className="p-1.5 sm:p-2 rounded-lg text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800/50 transition-all shrink-0 ml-2"
             title="Regenerate tips"
           >
             <RefreshCw size={12} />
@@ -73,22 +83,22 @@ export function AiTips({ noteTitle, noteContent }: AiTipsProps) {
         )}
       </div>
 
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         {/* Not yet generated */}
         {!generated && !loading && (
-          <div className="text-center py-4">
-            <p className="text-xs text-zinc-600 mb-4 leading-relaxed">
+          <div className="text-center py-4 px-2">
+            <p className="text-[11px] sm:text-xs text-zinc-500 mb-5 leading-relaxed max-w-xs mx-auto">
               Get practical tips and real-world advice for this topic from OpenAI.
             </p>
             <button
               onClick={() => void fetchTips()}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/40 transition-all text-xs font-black uppercase tracking-wider active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/40 transition-all text-[11px] font-black uppercase tracking-wider active:scale-[0.98]"
             >
               <Sparkles size={13} />
               Generate Tips
             </button>
             {error && (
-              <p className="mt-3 text-xs text-red-400">
+              <p className="mt-4 text-[10px] sm:text-xs text-red-400/80 px-2 leading-relaxed">
                 {error.includes("429") || error.includes("quota")
                   ? "Rate limit reached. Wait a minute and try again."
                   : error}
@@ -99,36 +109,42 @@ export function AiTips({ noteTitle, noteContent }: AiTipsProps) {
 
         {/* Loading */}
         {loading && (
-          <div className="flex flex-col items-center py-6 gap-3">
-            <Loader2 size={20} className="text-violet-400 animate-spin" />
-            <p className="text-[11px] text-zinc-600 font-mono">Generating tips...</p>
+          <div className="flex flex-col items-center py-8 gap-4">
+            <Loader2 size={24} className="text-violet-400 animate-spin" />
+            <p className="text-[10px] sm:text-[11px] text-zinc-600 font-mono animate-pulse">Analyzing content...</p>
           </div>
         )}
 
         {/* Tips list */}
         {generated && !loading && tips.length > 0 && (
-          <ul className="space-y-2">
+          <div className="space-y-2.5">
             {tips.map((tip, i) => (
-              <li key={i} className="rounded-xl border border-zinc-800/50 overflow-hidden">
+              <div key={i} className="rounded-xl bg-zinc-900/20 border border-zinc-800/40 overflow-hidden transition-colors hover:border-zinc-700/50">
                 <button
                   onClick={() => setExpandedIndex(expandedIndex === i ? null : i)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-zinc-900/40 transition-all"
+                  className="w-full flex items-start sm:items-center gap-3.5 px-4 py-3.5 text-left transition-all"
                 >
-                  <span className="text-base shrink-0">{tip.emoji}</span>
-                  <span className="text-xs font-bold text-zinc-300 flex-1 leading-snug">{tip.tip}</span>
-                  {expandedIndex === i
-                    ? <ChevronUp size={12} className="text-zinc-600 shrink-0" />
-                    : <ChevronDown size={12} className="text-zinc-600 shrink-0" />
-                  }
+                  <span className="text-base sm:text-lg shrink-0 mt-0.5 sm:mt-0 leading-none">{tip.emoji}</span>
+                  <span className="text-[11px] sm:text-xs font-bold text-zinc-300 flex-1 leading-[1.4] pr-1">{tip.tip}</span>
+                  <div className="shrink-0 mt-1 sm:mt-0 p-1 rounded-md bg-zinc-800/30">
+                    {expandedIndex === i
+                      ? <ChevronUp size={11} className="text-zinc-500" />
+                      : <ChevronDown size={11} className="text-zinc-500" />
+                    }
+                  </div>
                 </button>
                 {expandedIndex === i && (
-                  <div className="px-4 pb-3 pt-0">
-                    <p className="text-[11px] text-zinc-500 leading-relaxed pl-7">{tip.detail}</p>
+                  <div className="px-4 pb-4 pt-1 animate-fade-in">
+                    <div className="pl-[38px] sm:pl-[44px]">
+                      <p className="text-[10.5px] sm:text-[11px] text-zinc-500 leading-relaxed font-medium">
+                        {tip.detail}
+                      </p>
+                    </div>
                   </div>
                 )}
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
