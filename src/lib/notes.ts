@@ -53,6 +53,22 @@ function iconFromRow(row: { slug?: string | null; tags?: string[] | null; catego
   return row.category ?? "common";
 }
 
+function readFileNote(
+  slug: string
+): { content: string; title: string; icon: string; description: string } {
+  const filePath = path.join(NOTES_DIR, slug, "README.md");
+  const raw = fs.readFileSync(filePath, "utf-8");
+  const { content, data } = matter(raw);
+  const meta = META[slug] ?? { description: "", icon: "common" };
+
+  return {
+    content,
+    title: (data.title as string) ?? formatTitle(slug),
+    description: (data.description as string) ?? meta.description,
+    icon: meta.icon,
+  };
+}
+
 export function getAllNotesSync(): NoteMeta[] {
   try {
     if (!fs.existsSync(NOTES_DIR)) return [];
@@ -122,6 +138,16 @@ export async function getAllNotes(): Promise<NoteMeta[]> {
 export async function getNoteContent(
   slug: string
 ): Promise<{ content: string; title: string; icon: string; description: string }> {
+  let fileNote:
+    | { content: string; title: string; icon: string; description: string }
+    | null = null;
+
+  try {
+    fileNote = readFileNote(slug);
+  } catch {
+    fileNote = null;
+  }
+
   try {
     const { data, error } = await supabaseAdmin
       .from("notes")
@@ -132,24 +158,19 @@ export async function getNoteContent(
     if (error) throw new Error(error.message);
     if (!data) throw new Error(`Note not found: ${slug}`);
 
-    return {
-      content: data.content ?? "",
-      title: data.title,
-      description: data.description ?? "",
-      icon: iconFromRow({ slug, tags: data.tags ?? [], category: data.category }),
-    };
-  } catch {
-    const filePath = path.join(NOTES_DIR, slug, "README.md");
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const { content, data } = matter(raw);
-    const meta = META[slug] ?? { description: "", icon: "common" };
+    const dbContent = data.content?.trim() ?? "";
 
     return {
-      content,
-      title: (data.title as string) ?? formatTitle(slug),
-      description: (data.description as string) ?? meta.description,
-      icon: meta.icon,
+      content: dbContent.length > 0 ? data.content : (fileNote?.content ?? ""),
+      title: data.title || fileNote?.title || formatTitle(slug),
+      description: data.description ?? fileNote?.description ?? "",
+      icon: iconFromRow({ slug, tags: data.tags ?? [], category: data.category }) || fileNote?.icon || "common",
     };
+  } catch {
+    if (fileNote) {
+      return fileNote;
+    }
+    throw new Error(`Note not found: ${slug}`);
   }
 }
 
