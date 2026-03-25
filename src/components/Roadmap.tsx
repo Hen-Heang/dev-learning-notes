@@ -15,42 +15,42 @@ interface RoadmapPhase {
 const PHASES: RoadmapPhase[] = [
   {
     phase: "01",
-    week: "Week 1–2",
-    label: "Java & SQL Fundamentals",
-    detail: "OOP, Collections, JDBC, SELECT/JOIN/Aggregates, basic DB design",
-    tags: ["Java", "SQL", "JDBC"],
+    week: "Month 1",
+    label: "Computer Science & Logic",
+    detail: "Data Structures, Algorithms, Memory Management, and clean logic patterns.",
+    tags: ["DS/Algo", "Logic", "Complexity"],
     status: "done",
   },
   {
     phase: "02",
-    week: "Week 3–4",
-    label: "Spring Boot + MyBatis CRUD",
-    detail: "IoC/DI, @Controller, @Mapper, dynamic SQL, transaction management",
-    tags: ["Spring Boot", "MyBatis", "REST"],
+    week: "Month 2–3",
+    label: "Advanced Backend Systems",
+    detail: "Microservices, Distributed Databases, Caching (Redis), and Message Queues.",
+    tags: ["Java/Go", "Spring", "PostgreSQL", "Kafka"],
     status: "done",
   },
   {
     phase: "03",
-    week: "Week 5–6",
-    label: "JSP/JSTL + jQuery Workflow",
-    detail: "Server-side rendering, JSTL tags, AJAX calls, form validation",
-    tags: ["JSP", "JSTL", "jQuery", "AJAX"],
+    week: "Month 4–5",
+    label: "Modern Frontend Mastery",
+    detail: "Advanced React, Server Components, State Machines, and Design Systems.",
+    tags: ["Next.js", "TypeScript", "Tailwind", "Shadcn"],
     status: "active",
   },
   {
     phase: "04",
-    week: "Week 7–8",
-    label: "Korean Enterprise Patterns",
-    detail: "eGovFrame, .do URL pattern, VO/DTO/DAO, Oracle, SI project structure",
-    tags: ["eGovFrame", "Oracle", "SI"],
+    week: "Month 6–7",
+    label: "Cloud Architecture & DevOps",
+    detail: "Docker, Kubernetes, AWS/Vercel deployment, and automated CI/CD pipelines.",
+    tags: ["Docker", "K8s", "AWS", "CI/CD"],
     status: "upcoming",
   },
   {
     phase: "05",
-    week: "Week 9–10",
-    label: "Full Project — Build & Deploy",
-    detail: "End-to-end feature: login, CRUD board, file upload, deploy to server",
-    tags: ["Project", "Deploy", "Portfolio"],
+    week: "Month 8+",
+    label: "Product Engineering",
+    detail: "System design, high-scale performance, security auditing, and lead engineer skills.",
+    tags: ["System Design", "Security", "Leadership"],
     status: "upcoming",
   },
 ];
@@ -86,22 +86,16 @@ const STATUS_CONFIG = {
 };
 
 const TAG_COLOR: Record<string, string> = {
-  Java: "text-orange-400/80 bg-orange-400/8 border-orange-400/15",
-  SQL: "text-sky-400/80 bg-sky-400/8 border-sky-400/15",
-  JDBC: "text-sky-400/80 bg-sky-400/8 border-sky-400/15",
-  "Spring Boot": "text-emerald-400/80 bg-emerald-400/8 border-emerald-400/15",
-  MyBatis: "text-red-400/80 bg-red-400/8 border-red-400/15",
-  REST: "text-purple-400/80 bg-purple-400/8 border-purple-400/15",
-  JSP: "text-orange-400/80 bg-orange-400/8 border-orange-400/15",
-  JSTL: "text-orange-400/80 bg-orange-400/8 border-orange-400/15",
-  jQuery: "text-blue-400/80 bg-blue-400/8 border-blue-400/15",
-  AJAX: "text-blue-400/80 bg-blue-400/8 border-blue-400/15",
-  eGovFrame: "text-violet-400/80 bg-violet-400/8 border-violet-400/15",
-  Oracle: "text-red-400/80 bg-red-400/8 border-red-400/15",
-  SI: "text-zinc-400/80 bg-zinc-400/8 border-zinc-400/15",
-  Project: "text-emerald-400/80 bg-emerald-400/8 border-emerald-400/15",
-  Deploy: "text-sky-400/80 bg-sky-400/8 border-sky-400/15",
-  Portfolio: "text-violet-400/80 bg-violet-400/8 border-violet-400/15",
+  "DS/Algo": "text-orange-400/80 bg-orange-400/8 border-orange-400/15",
+  Logic: "text-sky-400/80 bg-sky-400/8 border-sky-400/15",
+  "Java/Go": "text-emerald-400/80 bg-emerald-400/8 border-emerald-400/15",
+  Spring: "text-emerald-400/80 bg-emerald-400/8 border-emerald-400/15",
+  PostgreSQL: "text-sky-400/80 bg-sky-400/8 border-sky-400/15",
+  "Next.js": "text-white/80 bg-white/8 border-white/15",
+  TypeScript: "text-blue-400/80 bg-blue-400/8 border-blue-400/15",
+  Docker: "text-blue-400/80 bg-blue-400/8 border-blue-400/15",
+  AWS: "text-amber-400/80 bg-amber-400/8 border-amber-400/15",
+  "System Design": "text-violet-400/80 bg-violet-400/8 border-violet-400/15",
 };
 
 const doneCount = PHASES.filter((p) => p.status === "done").length;
@@ -112,15 +106,15 @@ export function Roadmap() {
     <section className="mt-14">
       {/* Section header */}
       <div className="flex items-center gap-3 mb-6">
-        <span className="text-[10px] font-mono text-zinc-600 tracking-wider uppercase">{"// roadmap"}</span>
+        <span className="text-[10px] font-mono text-zinc-600 tracking-wider uppercase">{"// career path"}</span>
         <div className="flex-1 h-px bg-zinc-800" />
-        <span className="text-[10px] font-mono text-zinc-600">{doneCount}/{PHASES.length} phases</span>
+        <span className="text-[10px] font-mono text-zinc-600">{doneCount}/{PHASES.length} milestones</span>
       </div>
 
       {/* Progress bar */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-zinc-500">Korea Adaptation Progress</span>
+          <span className="text-xs text-zinc-500">Full-Stack Mastery Progress</span>
           <span className="text-xs font-mono text-emerald-400">{progressPct}%</span>
         </div>
         <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -220,7 +214,7 @@ export function Roadmap() {
         transition={{ delay: 0.6 }}
         className="mt-6 text-xs text-zinc-700 font-mono text-center"
       >
-        {"// 목표: 한국 SI 기업 적응 완료 🇰🇷"}
+        {"// GOAL: SENIOR FULL-STACK ENGINEER 🌍"}
       </motion.p>
     </section>
   );

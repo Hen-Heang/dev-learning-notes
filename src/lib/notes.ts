@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { supabaseAdmin } from "./supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { supabase } from "./supabase";
 
 export interface NoteMeta {
   id?: string;
@@ -39,7 +40,6 @@ function formatTitle(slug: string): string {
     roadmap: "Korea Adaptation Roadmap",
     "egov-sample": "화면 개발 샘플 가이드",
   };
-
   return map[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1);
 }
 
@@ -65,7 +65,7 @@ function readFileNote(
     content,
     title: (data.title as string) ?? formatTitle(slug),
     description: (data.description as string) ?? meta.description,
-    icon: meta.icon,
+    icon: (data.icon as string) ?? meta.icon,
   };
 }
 
@@ -97,11 +97,14 @@ export function getAllNotesSync(): NoteMeta[] {
   });
 }
 
-export async function getAllNotes(): Promise<NoteMeta[]> {
+// Pass the authenticated Supabase server client so RLS returns the user's notes.
+// Falls back to filesystem-only if no client is provided or DB is unreachable.
+export async function getAllNotes(client?: SupabaseClient): Promise<NoteMeta[]> {
   const fileNotes = getAllNotesSync();
+  const db = client ?? supabase;
 
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await db
       .from("notes")
       .select("id, slug, title, description, category, tags")
       .order("created_at", { ascending: true });
@@ -135,13 +138,14 @@ export async function getAllNotes(): Promise<NoteMeta[]> {
   }
 }
 
+// Pass the authenticated Supabase server client so RLS allows reading the note.
 export async function getNoteContent(
-  slug: string
+  slug: string,
+  client?: SupabaseClient
 ): Promise<{ content: string; title: string; icon: string; description: string }> {
-  let fileNote:
-    | { content: string; title: string; icon: string; description: string }
-    | null = null;
+  const db = client ?? supabase;
 
+  let fileNote: { content: string; title: string; icon: string; description: string } | null = null;
   try {
     fileNote = readFileNote(slug);
   } catch {
@@ -149,7 +153,7 @@ export async function getNoteContent(
   }
 
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await db
       .from("notes")
       .select("title, description, category, tags, content")
       .eq("slug", slug)
@@ -167,9 +171,7 @@ export async function getNoteContent(
       icon: iconFromRow({ slug, tags: data.tags ?? [], category: data.category }) || fileNote?.icon || "common",
     };
   } catch {
-    if (fileNote) {
-      return fileNote;
-    }
+    if (fileNote) return fileNote;
     throw new Error(`Note not found: ${slug}`);
   }
 }
@@ -177,8 +179,10 @@ export async function getNoteContent(
 export async function saveNote(
   slug: string,
   content: string,
-  meta: Partial<NoteMeta>
+  meta: Partial<NoteMeta>,
+  client?: SupabaseClient
 ): Promise<void> {
+  const db = client ?? supabase;
   const existingTags = meta.tags ?? [];
   const nextTags = meta.icon
     ? [meta.icon, ...existingTags.filter((tag) => tag !== meta.icon)]
@@ -193,22 +197,15 @@ export async function saveNote(
     tags: nextTags.length > 0 ? nextTags : undefined,
   };
 
-  const { error } = await supabaseAdmin
+  const { error } = await db
     .from("notes")
     .upsert(payload, { onConflict: "slug" });
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 }
 
-export async function deleteNote(slug: string): Promise<void> {
-  const { error } = await supabaseAdmin
-    .from("notes")
-    .delete()
-    .eq("slug", slug);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+export async function deleteNote(slug: string, client?: SupabaseClient): Promise<void> {
+  const db = client ?? supabase;
+  const { error } = await db.from("notes").delete().eq("slug", slug);
+  if (error) throw new Error(error.message);
 }

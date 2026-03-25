@@ -4,11 +4,10 @@ import { useEffect } from "react";
 
 export function CodeCopy() {
   useEffect(() => {
-    // Target both shiki wrappers and plain pre blocks
     const blocks = document.querySelectorAll<HTMLElement>("article .shiki-wrapper, article pre:not(.shiki-wrapper pre)");
+    const isDark = document.documentElement.classList.contains("dark");
 
     blocks.forEach((pre) => {
-      // avoid duplicates
       if (pre.querySelector(".copy-btn")) return;
 
       pre.style.position = "relative";
@@ -16,6 +15,18 @@ export function CodeCopy() {
       const btn = document.createElement("button");
       btn.className = "copy-btn";
       btn.textContent = "Copy";
+
+      const darkBg = "#27272a";
+      const darkText = "#a1a1aa";
+      const darkBorder = "#3f3f46";
+      const lightBg = "#e4e4e7";
+      const lightText = "#52525b";
+      const lightBorder = "#d4d4d8";
+
+      const bg = isDark ? darkBg : lightBg;
+      const color = isDark ? darkText : lightText;
+      const border = isDark ? darkBorder : lightBorder;
+
       btn.style.cssText = `
         position: absolute;
         top: 10px;
@@ -23,9 +34,9 @@ export function CodeCopy() {
         font-size: 11px;
         font-family: system-ui, sans-serif;
         padding: 3px 10px;
-        background: #27272a;
-        color: #a1a1aa;
-        border: 1px solid #3f3f46;
+        background: ${bg};
+        color: ${color};
+        border: 1px solid ${border};
         border-radius: 5px;
         cursor: pointer;
         transition: background 0.15s, color 0.15s;
@@ -33,13 +44,13 @@ export function CodeCopy() {
       `;
 
       btn.addEventListener("mouseenter", () => {
-        btn.style.background = "#3f3f46";
-        btn.style.color = "#e4e4e7";
+        btn.style.background = isDark ? "#3f3f46" : "#d4d4d8";
+        btn.style.color = isDark ? "#e4e4e7" : "#18181b";
       });
       btn.addEventListener("mouseleave", () => {
         if (btn.textContent !== "Copied!") {
-          btn.style.background = "#27272a";
-          btn.style.color = "#a1a1aa";
+          btn.style.background = bg;
+          btn.style.color = color;
         }
       });
 
@@ -52,9 +63,9 @@ export function CodeCopy() {
           btn.style.borderColor = "#34d399";
           setTimeout(() => {
             btn.textContent = "Copy";
-            btn.style.background = "#27272a";
-            btn.style.color = "#a1a1aa";
-            btn.style.borderColor = "#3f3f46";
+            btn.style.background = bg;
+            btn.style.color = color;
+            btn.style.borderColor = border;
           }, 2000);
         });
       });

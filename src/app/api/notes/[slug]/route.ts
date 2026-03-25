@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { supabase, createServerClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 
-// GET /api/notes/:slug — public
+// GET /api/notes/:slug — RLS ensures only the owner can read
 export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("notes")
@@ -16,15 +17,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   return NextResponse.json(data);
 }
 
-// PUT /api/notes/:slug — admin only (protected by middleware)
+// PUT /api/notes/:slug — RLS ensures only the owner can update
 export async function PUT(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
+    const supabase = await createClient();
     const body = await req.json();
     const { title, description, category, content, tags } = body;
 
-    const db = createServerClient();
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from("notes")
       .update({ title, description, category, content, tags })
       .eq("slug", slug)
@@ -40,7 +41,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
   } catch (error) {
     const message =
       error instanceof Error && error.message.includes("fetch failed")
-        ? "Supabase connection failed. If you are behind a proxy with certificate interception, restart the dev server with SUPABASE_TLS_INSECURE=true in .env.local."
+        ? "Supabase connection failed."
         : error instanceof Error
           ? error.message
           : "Unexpected server error.";
@@ -49,13 +50,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
   }
 }
 
-// DELETE /api/notes/:slug — admin only (protected by middleware)
+// DELETE /api/notes/:slug — RLS ensures only the owner can delete
 export async function DELETE(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
+    const supabase = await createClient();
 
-    const db = createServerClient();
-    const { error } = await db.from("notes").delete().eq("slug", slug);
+    const { error } = await supabase.from("notes").delete().eq("slug", slug);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -65,7 +66,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ slug
   } catch (error) {
     const message =
       error instanceof Error && error.message.includes("fetch failed")
-        ? "Supabase connection failed. If you are behind a proxy with certificate interception, restart the dev server with SUPABASE_TLS_INSECURE=true in .env.local."
+        ? "Supabase connection failed."
         : error instanceof Error
           ? error.message
           : "Unexpected server error.";

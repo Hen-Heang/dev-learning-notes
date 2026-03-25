@@ -3,7 +3,11 @@
     "allow": [
       "Bash(cp c:/Practice/nextjs-temp/tsconfig.json c:/Practice/dev-learning-notes/tsconfig.json)",
       "Bash(cp c:/Practice/nextjs-temp/next.config.ts c:/Practice/dev-learning-notes/next.config.ts)",
-      "Bash(cp -r c:/Practice/nextjs-temp/public c:/Practice/dev-learning-notes/)"
+      "Bash(cp -r c:/Practice/nextjs-temp/public c:/Practice/dev-learning-notes/)",
+      "Bash(npx next:*)",
+      "Bash(node scripts/sync-notes.mjs)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

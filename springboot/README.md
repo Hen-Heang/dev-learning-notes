@@ -1,150 +1,69 @@
-# 🌱 Spring Boot Notes
+# Spring Boot Mastery Notes
 
-[<- Back to root](../README.md)
+## 🍃 Thymeleaf: Server-Side Rendering
+Thymeleaf is a modern server-side Java template engine for both web and standalone environments. It is the natural successor to JSP and is highly integrated with Spring Boot.
 
-## 🎯 Purpose
+### 1. Basic Syntax (The Core)
+*   **`th:text`**: Replaces the text content of an element.
+    ```html
+    <p th:text="${user.name}">Default Name</p>
+    ```
+*   **`th:value`**: Sets the value attribute (useful for forms).
+    ```html
+    <input type="text" th:value="${user.email}" />
+    ```
+*   **`th:each`**: Iterates over a collection (List, Map).
+    ```html
+    <tr th:each="note : ${notes}">
+        <td th:text="${note.title}">Title</td>
+    </tr>
+    ```
+*   **`th:if` / `th:unless`**: Conditional rendering.
+    ```html
+    <div th:if="${user.isAdmin}">Admin Panel</div>
+    ```
 
-Core Spring Boot patterns for enterprise-style backend projects.
+### 2. Intermediate Patterns (Real Projects)
+*   **Object Selection (`th:object` & `*{}**)`: Shorthand for working with a specific object.
+    ```html
+    <form th:object="${member}">
+        <input type="text" th:field="*{name}" />
+    </form>
+    ```
+*   **URL Handling (`@{...}`)**: Handling context paths and parameters safely.
+    ```html
+    <a th:href="@{/notes/view(id=${note.id})}">View Note</a>
+    ```
+*   **Literal Substitution**: Clean string concatenation.
+    ```html
+    <span th:text="|Welcome, ${user.name}!|"></span>
+    ```
 
-## 🧠 IoC and DI Essentials
+### 3. Advanced Enterprise Usage
+*   **Fragments (`th:fragment`)**: Reusable UI components (Navbar, Footer).
+    ```html
+    <!-- footer.html -->
+    <footer th:fragment="copy"> &copy; 2026 dev-notes </footer>
+    
+    <!-- main.html -->
+    <div th:replace="~{footer :: copy}"></div>
+    ```
+*   **Layout Dialect**: Building a decorator pattern where pages "plug into" a common layout.
+*   **Spring Security Integration**: Showing/Hiding elements based on roles.
+    ```html
+    <div sec:authorize="hasRole('ADMIN')">Only visible to Admins</div>
+    ```
+*   **Inlining**: Using Java variables directly in JavaScript or CSS.
+    ```javascript
+    const userId = [[${user.id}]];
+    ```
 
-| Annotation | Meaning |
-| --- | --- |
-| `@Component` | Generic bean |
-| `@Service` | Service-layer bean |
-| `@Repository` | Persistence-layer bean |
-| `@Controller` | MVC controller |
-| `@RestController` | JSON API controller |
-| `@Configuration` | Bean configuration class |
-| `@Bean` | Registers method return as bean |
+---
 
-```java
-@Service
-public class UserServiceImpl implements UserService {
-    private final UserMapper userMapper;
-
-    public UserServiceImpl(UserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
-}
-```
-
-## 🌐 Web MVC Annotations
-
-| Annotation | Usage |
-| --- | --- |
-| `@RequestMapping` | Base path mapping |
-| `@GetMapping` | HTTP GET |
-| `@PostMapping` | HTTP POST |
-| `@PutMapping` | HTTP PUT |
-| `@DeleteMapping` | HTTP DELETE |
-| `@PathVariable` | Value from URL path |
-| `@RequestParam` | Query parameter |
-| `@RequestBody` | JSON request body |
-
-```java
-@RestController
-@RequestMapping("/users")
-public class UserController {
-
-    @GetMapping
-    public ApiResponse<List<UserResponse>> getAll() { ... }
-
-    @GetMapping("/{id}")
-    public ApiResponse<UserResponse> getById(@PathVariable Long id) { ... }
-
-    @PostMapping
-    public ApiResponse<Void> create(@RequestBody UserRequest req) { ... }
-}
-```
-
-## 🔄 Transactions
-
-```java
-@Service
-public class UserServiceImpl {
-
-    @Transactional
-    public void createUser(UserRequest req) {
-        userMapper.insert(req);
-        auditMapper.log(req);
-    }
-
-    @Transactional(readOnly = true)
-    public List<UserResponse> getAll() {
-        return userMapper.selectAll();
-    }
-}
-```
-
-## 🏗️ Recommended Layer Structure
-
-```text
-Controller -> Service -> Mapper -> Database
-```
-
-| Layer | Role |
-| --- | --- |
-| `controller/` | Handles HTTP request/response |
-| `service/` | Business logic and transaction boundary |
-| `mapper/` | SQL mapping via MyBatis |
-| `dto/` | Request/response schema |
-| `model/` | Table-aligned domain object |
-| `config/` | Spring config classes |
-| `common/` | Shared response/error utilities |
-
-## ⚙️ `application.properties` baseline
-
-```properties
-server.port=8080
-
-spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
-spring.datasource.username=postgres
-spring.datasource.password=your_password
-spring.datasource.driver-class-name=org.postgresql.Driver
-
-mybatis.mapper-locations=classpath:mapper/**/*.xml
-mybatis.type-aliases-package=com.yourpackage.model
-mybatis.configuration.map-underscore-to-camel-case=true
-
-logging.level.com.yourpackage.mapper=DEBUG
-```
-
-## 📦 Unified API Response Pattern
-
-```java
-public class ApiResponse<T> {
-    private String resultCd;
-    private String resultMsg;
-    private T data;
-
-    public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>("M0000", "Success", data);
-    }
-
-    public static <T> ApiResponse<T> error(String msg) {
-        return new ApiResponse<>("E9999", msg, null);
-    }
-}
-```
-
-## 🔐 CORS Example
-
-```java
-@Configuration
-public class CorsConfig implements WebMvcConfigurer {
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000")
-                .allowedMethods("GET", "POST", "PUT", "DELETE");
-    }
-}
-```
-
-## ✅ Quick Practice Rules
-
-- Prefer constructor injection.
-- Keep controller thin; place logic in service.
-- Keep mapper SQL focused and explicit.
-- Return a consistent API response shape.
+## 🚀 Common Spring Boot Roadmap
+*   **Core**: IoC, DI, Bean Lifecycle.
+*   **MVC**: Controllers, ViewResolvers, Form Handling.
+*   **Thymeleaf**: SSR, Template Fragments, Layouts.
+*   **Data**: Spring Data JPA, MyBatis (SQL Mapping).
+*   **Security**: Authentication, Authorization, JWT.
+*   **Advanced**: Microservices, Cloud, Performance Tuning.

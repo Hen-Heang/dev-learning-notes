@@ -391,7 +391,7 @@ function BlockItem({
             )}
           >
             <div
-              className="prose prose-zinc prose-invert max-w-none prose-headings:mt-1 prose-headings:mb-1 prose-p:my-1 prose-pre:my-1 prose-li:my-0.5 prose-pre:rounded-none"
+              className="prose prose-zinc dark:prose-invert max-w-none prose-headings:mt-1 prose-headings:mb-1 prose-p:my-1 prose-pre:my-1 prose-li:my-0.5 prose-pre:rounded-none"
               dangerouslySetInnerHTML={{ __html: html }}
             />
             <span className="absolute right-3 top-2 opacity-0 group-hover/block:opacity-100 transition-opacity text-[10px] text-zinc-600 font-mono bg-zinc-900/80 px-1.5 py-0.5 rounded border border-zinc-800">

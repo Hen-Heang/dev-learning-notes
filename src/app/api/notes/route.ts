@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { supabase, createServerClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { getAllNotesSync } from "@/lib/notes";
 
-// GET /api/notes — public, list all notes
+// GET /api/notes — returns the current user's notes (RLS enforced)
 export async function GET() {
   try {
+    const supabase = await createClient();
+
     const { data, error } = await supabase
       .from("notes")
       .select("id, slug, title, description, category, tags, created_at, updated_at")
@@ -26,27 +28,42 @@ export async function GET() {
     }));
 
     return NextResponse.json(fallbackNotes, {
-      headers: {
-        "x-notes-source": "filesystem-fallback",
-      },
+      headers: { "x-notes-source": "filesystem-fallback" },
     });
   }
 }
 
-// POST /api/notes — admin only (protected by middleware)
+// POST /api/notes — creates a note owned by the current user
 export async function POST(req: Request) {
   try {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { slug, title, description, category, content, tags } = body;
 
     if (!slug || !title || !content) {
-      return NextResponse.json({ error: "slug, title, and content are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "slug, title, and content are required" },
+        { status: 400 }
+      );
     }
 
-    const db = createServerClient();
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from("notes")
-      .insert({ slug, title, description, category, content, tags: tags ?? [] })
+      .insert({
+        slug,
+        title,
+        description,
+        category,
+        content,
+        tags: tags ?? [],
+        user_id: user.id,
+      })
       .select()
       .single();
 
@@ -61,7 +78,7 @@ export async function POST(req: Request) {
   } catch (error) {
     const message =
       error instanceof Error && error.message.includes("fetch failed")
-        ? "Supabase connection failed. If you are behind a proxy with certificate interception, restart the dev server with SUPABASE_TLS_INSECURE=true in .env.local."
+        ? "Supabase connection failed."
         : error instanceof Error
           ? error.message
           : "Unexpected server error.";

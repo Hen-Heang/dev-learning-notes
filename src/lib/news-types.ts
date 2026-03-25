@@ -12,4 +12,5 @@ export interface NewsItem {
   publishedAt?: string;
   readingTime?: number;
   topics: NewsTopic[];
+  imageUrl?: string;
 }

@@ -65,7 +65,7 @@ function SortableNoteItem({
         {...listeners}
         className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-5 h-8 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
       >
-        <GripVertical size={12} className="text-zinc-600 hover:text-zinc-400" />
+        <GripVertical size={12} className="text-zinc-400 dark:text-zinc-600 hover:text-zinc-600 dark:hover:text-zinc-400" />
       </div>
 
       <Link href={`/notes/${note.slug}`} tabIndex={isDragging ? -1 : 0}>
@@ -75,8 +75,8 @@ function SortableNoteItem({
           className={cn(
             "relative flex items-center gap-3 pl-5 pr-3 py-2.5 rounded-xl text-sm transition-all duration-200 border border-transparent",
             active
-              ? "bg-zinc-900/80 text-zinc-100 border-zinc-800 shadow-sm"
-              : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/30"
+              ? "bg-zinc-100/80 dark:bg-zinc-900/80 text-zinc-800 dark:text-zinc-100 border-zinc-200 dark:border-zinc-800 shadow-sm"
+              : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100/50 dark:hover:bg-zinc-900/30"
           )}
         >
           <TechIcon
@@ -112,7 +112,7 @@ function SortableNoteItem({
 function DragOverlayItem({ note }: { note: NavItem }) {
   const color = getTechColor(note.icon || note.slug);
   return (
-    <div className="flex items-center gap-3 pl-5 pr-3 py-2.5 rounded-xl text-sm bg-zinc-900 border border-zinc-700 shadow-2xl text-zinc-200 cursor-grabbing rotate-1 scale-105">
+    <div className="flex items-center gap-3 pl-5 pr-3 py-2.5 rounded-xl text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-2xl text-zinc-800 dark:text-zinc-200 cursor-grabbing rotate-1 scale-105">
       <TechIcon name={note.icon} size={16} className="shrink-0 opacity-80" />
       <span className="truncate font-medium">{note.title}</span>
       <div className="ml-auto w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
@@ -166,8 +166,8 @@ export function SortableNoteList({ notes }: { notes: NavItem[] }) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 border border-transparent",
                   active
-                    ? "bg-zinc-900/80 text-zinc-100 border-zinc-800 shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/30"
+                    ? "bg-zinc-100/80 dark:bg-zinc-900/80 text-zinc-800 dark:text-zinc-100 border-zinc-200 dark:border-zinc-800 shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100/50 dark:hover:bg-zinc-900/30"
                 )}
               >
                 <TechIcon name={note.icon} size={16} className="shrink-0" />

@@ -64,6 +64,7 @@ async function fetchDevTo(): Promise<NewsItem[]> {
             publishedAt: article.published_at,
             readingTime: article.reading_time_minutes,
             topics: buildTopics("devto", article.title, article.tag_list?.[0] ?? tag),
+            imageUrl: article.social_image || article.cover_image,
           });
         }
       }
@@ -220,6 +221,7 @@ async function fetchTheNewsApi(): Promise<NewsItem[]> {
         url: string;
         published_at?: string;
         categories?: string[];
+        image_url?: string;
       }) => ({
         id: `thenewsapi-${article.uuid}`,
         title: article.title,
@@ -228,6 +230,7 @@ async function fetchTheNewsApi(): Promise<NewsItem[]> {
         tag: article.categories?.[0],
         publishedAt: article.published_at,
         topics: buildTopics("thenewsapi", article.title, article.categories?.[0]),
+        imageUrl: article.image_url,
       })
     );
   } catch {

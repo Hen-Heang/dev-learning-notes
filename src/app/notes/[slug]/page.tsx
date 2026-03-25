@@ -1,4 +1,5 @@
 import { getNoteContent } from "@/lib/notes";
+import { createClient } from "@/lib/supabase/server";
 import { renderMarkdown } from "@/lib/highlight";
 import { notFound, redirect } from "next/navigation";
 import { NoteView } from "@/components/NoteView";
@@ -14,7 +15,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const resolvedSlug = NOTE_ALIASES[slug] ?? slug;
 
   try {
-    const { title } = await getNoteContent(resolvedSlug);
+    const supabase = await createClient();
+    const { title } = await getNoteContent(resolvedSlug, supabase);
     return { title: `${title} — Dev Notes` };
   } catch {
     return { title: "Not Found" };
@@ -31,7 +33,8 @@ export default async function NotePage({ params }: { params: Promise<{ slug: str
 
   let note;
   try {
-    note = await getNoteContent(resolvedSlug);
+    const supabase = await createClient();
+    note = await getNoteContent(resolvedSlug, supabase);
   } catch {
     notFound();
   }

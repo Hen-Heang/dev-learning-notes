@@ -30,7 +30,29 @@ const TIPS_SCHEMA = {
   },
 };
 
+// Rate limiting: 10 requests per minute per IP
+const aiRequests = new Map<string, { count: number; resetAt: number }>();
+const MAX_REQUESTS = 10;
+const WINDOW_MS = 60 * 1000;
+
 export async function POST(req: NextRequest) {
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  const now = Date.now();
+
+  const entry = aiRequests.get(ip);
+  if (entry && now < entry.resetAt) {
+    if (entry.count >= MAX_REQUESTS) {
+      return NextResponse.json(
+        { error: "Rate limit reached. Wait a minute and try again." },
+        { status: 429 }
+      );
+    }
+    aiRequests.set(ip, { ...entry, count: entry.count + 1 });
+  } else {
+    aiRequests.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+  }
+
   try {
     const { title, content } = await req.json();
 

@@ -65,6 +65,7 @@ export function createServerClient(): TypedClient {
   return createAdminClient();
 }
 
+
 export interface Note {
   id: string;
   slug: string;

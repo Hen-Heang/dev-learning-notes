@@ -45,19 +45,15 @@ export function TableOfContents({ html, mobile = false }: { html: string; mobile
 
   return (
     <nav
-      className={
-        mobile
-          ? "w-full"
-          : "hidden xl:block sticky top-24 w-64 shrink-0 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto pr-4 scrollbar-hide"
-      }
+      className={mobile ? "w-full p-4" : "p-4"}
     >
-      <div className="flex items-center gap-2 mb-4 text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em]">
+      <div className="flex items-center gap-2 mb-4 text-[10px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-[0.2em]">
         <List size={14} />
         Table of Contents
       </div>
 
       <ul className="space-y-1 relative">
-        <div className="absolute left-0 top-0 bottom-0 w-px bg-zinc-800" />
+        <div className="absolute left-0 top-0 bottom-0 w-px bg-zinc-200 dark:bg-zinc-800" />
 
         {toc.map((item, index) => (
           <li
@@ -69,7 +65,7 @@ export function TableOfContents({ html, mobile = false }: { html: string; mobile
           >
             <div
               className={cn(
-                "absolute left-[-0.5px] top-1/2 -translate-y-1/2 w-px h-full bg-transparent group-hover:bg-zinc-700 transition-colors",
+                "absolute left-[-0.5px] top-1/2 -translate-y-1/2 w-px h-full bg-transparent group-hover:bg-zinc-400 dark:group-hover:bg-zinc-700 transition-colors",
                 activeId === item.id ? "bg-emerald-500 h-full w-[2px] z-10" : ""
               )}
             />
@@ -82,8 +78,8 @@ export function TableOfContents({ html, mobile = false }: { html: string; mobile
                 setActiveId(item.id);
               }}
               className={cn(
-                "block py-1.5 text-xs font-medium transition-colors hover:text-zinc-200",
-                activeId === item.id ? "text-emerald-400" : "text-zinc-500"
+                "block py-1.5 text-xs font-medium transition-colors hover:text-zinc-700 dark:hover:text-zinc-200",
+                activeId === item.id ? "text-emerald-500 dark:text-emerald-400" : "text-zinc-400 dark:text-zinc-500"
               )}
             >
               {item.text}
