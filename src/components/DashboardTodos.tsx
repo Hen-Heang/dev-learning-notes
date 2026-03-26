@@ -43,7 +43,18 @@ export function DashboardTodos({ userId }: { userId: string }) {
   }
 
   // Filter for high priority or due today/scheduled
-  const focusTasks = todos.slice(0, 5); // Just show top 5 for dashboard cleaness
+  const today = new Date().toISOString().split('T')[0];
+  const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2, none: 3 };
+  const focusTasks = [...todos]
+    .sort((a, b) => {
+      const pa = PRIORITY_ORDER[a.priority] ?? 3;
+      const pb = PRIORITY_ORDER[b.priority] ?? 3;
+      if (pa !== pb) return pa - pb;
+      const aToday = a.due_date === today ? 0 : 1;
+      const bToday = b.due_date === today ? 0 : 1;
+      return aToday - bToday;
+    })
+    .slice(0, 5);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">

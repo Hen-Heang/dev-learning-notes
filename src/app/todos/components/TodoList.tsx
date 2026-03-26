@@ -30,7 +30,7 @@ interface Props {
   onToggle: (id: string) => void;
   onSelect: (todo: Todo) => void;
   onDelete: (id: string) => void;
-  onAdd: (title: string) => void;
+  onAdd: (title: string, fields?: Partial<Todo>) => Promise<Todo>;
   onReorder: (todos: Todo[]) => void;
   onClearCompleted?: () => void;
 }
@@ -173,7 +173,10 @@ export function TodoList({
 
       {/* Quick-add — hidden for the "completed" smart list and during search */}
       {!isCompletedView && !searchQuery && (
-        <QuickAdd onAdd={onAdd} color={activeListColor} />
+        <QuickAdd
+          onAdd={async (title, fields) => { const todo = await onAdd(title, fields); onSelect(todo); }}
+          color={activeListColor}
+        />
       )}
     </div>
   );

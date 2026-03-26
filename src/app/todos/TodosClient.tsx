@@ -118,8 +118,8 @@ export function TodosClient({ userId }: Props) {
           lists={lists}
           smartCounts={smartCounts}
           activeList={activeList}
-          onSelectSmart={(id) => setActiveList({ type: 'smart', id })}
-          onSelectList={(id) => setActiveList({ type: 'list', id })}
+          onSelectSmart={(id) => { setActiveList({ type: 'smart', id }); setShowDashboardOnMobile(false); }}
+          onSelectList={(id) => { setActiveList({ type: 'list', id }); setShowDashboardOnMobile(false); }}
           onAddList={addList}
           onDeleteList={removeList}
         />

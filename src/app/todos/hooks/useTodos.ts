@@ -150,46 +150,71 @@ export function useTodos(userId: string) {
   }, [lists, activeList]);
 
   // ── Todo CRUD ─────────────────────────────────────────────────────────────
-  const addTodo = useCallback(async (title: string) => {
-    const resolvedListId = activeList.type === 'list' ? activeList.id : null;
+  const addTodo = useCallback(async (title: string, fields?: Partial<Todo>): Promise<Todo> => {
+    const resolvedListId = fields?.list_id ?? (activeList.type === 'list' ? activeList.id : null);
     const tempId = `temp-${Date.now()}`;
-    const optimistic: Todo = {
-      id: tempId, user_id: userId, list_id: resolvedListId,
-      title, notes: null, due_date: null, due_time: null,
-      priority: 'none', is_completed: false, completed_at: null, notify: false,
-      position: todos.length, created_at: new Date().toISOString(),
-    };
-    setTodos(prev => [...prev, optimistic]);
+    let position = 0;
+    let optimistic!: Todo;
+    setTodos(prev => {
+      position = prev.length;
+      optimistic = {
+        id: tempId, user_id: userId, list_id: resolvedListId,
+        title, 
+        notes: fields?.notes ?? null, 
+        due_date: fields?.due_date ?? null, 
+        due_time: fields?.due_time ?? null,
+        priority: fields?.priority ?? 'none', 
+        is_completed: fields?.is_completed ?? false, 
+        completed_at: null, 
+        notify: fields?.notify ?? false,
+        position, created_at: new Date().toISOString(),
+      };
+      return [...prev, optimistic];
+    });
     try {
       const created = await createTodo(supabase, {
-        user_id: userId, list_id: resolvedListId, title, position: todos.length,
+        user_id: userId, 
+        list_id: resolvedListId, 
+        title, 
+        position,
+        notes: fields?.notes,
+        due_date: fields?.due_date,
+        due_time: fields?.due_time,
+        priority: fields?.priority,
       });
       setTodos(prev => prev.map(t => t.id === tempId ? created : t));
+      return created;
     } catch (err) {
       console.error('[useTodos] addTodo failed:', err);
       setTodos(prev => prev.filter(t => t.id !== tempId));
       setError(err instanceof Error ? err.message : 'Failed to add todo');
+      return optimistic;
     }
-  }, [supabase, userId, todos.length, activeList]);
+  }, [supabase, userId, activeList]);
 
   const toggleTodo = useCallback(async (id: string) => {
-    const todo = todos.find(t => t.id === id);
-    if (!todo) return;
-    const now = new Date().toISOString();
-    const patch = todo.is_completed
-      ? { is_completed: false as const, completed_at: null }
-      : { is_completed: true as const, completed_at: now };
-    setTodos(prev => prev.map(t => t.id === id ? { ...t, ...patch } : t));
-    setSelectedTodo(prev => (prev?.id === id ? { ...prev, ...patch } : prev));
+    let original: Todo | undefined;
+    let patch: { is_completed: boolean; completed_at: string | null } | undefined;
+    setTodos(prev => {
+      original = prev.find(t => t.id === id);
+      if (!original) return prev;
+      const now = new Date().toISOString();
+      patch = original.is_completed
+        ? { is_completed: false, completed_at: null }
+        : { is_completed: true, completed_at: now };
+      return prev.map(t => t.id === id ? { ...t, ...patch! } : t);
+    });
+    if (!original || !patch) return;
+    setSelectedTodo(prev => (prev?.id === id ? { ...prev, ...patch! } : prev));
     try {
-      await updateTodo(supabase, id, patch);
+      await updateTodo(supabase, id, patch as Parameters<typeof updateTodo>[2]);
     } catch (err) {
       console.error('[useTodos] toggleTodo failed:', err);
-      setTodos(prev => prev.map(t => t.id === id ? todo : t));
-      setSelectedTodo(prev => (prev?.id === id ? todo : prev));
+      setTodos(prev => prev.map(t => t.id === id ? original! : t));
+      setSelectedTodo(prev => (prev?.id === id ? original! : prev));
       setError(err instanceof Error ? err.message : 'Failed to update todo');
     }
-  }, [supabase, todos]);
+  }, [supabase]);
 
   const saveTodo = useCallback(async (id: string, patch: Partial<Todo>) => {
     const original = todos.find(t => t.id === id);
@@ -272,8 +297,10 @@ export function useTodos(userId: string) {
   }, [supabase, userId, lists.length]);
 
   const removeList = useCallback(async (id: string) => {
-    setLists(prev => prev.filter(l => l.id !== id));
-    setTodos(prev => prev.map(t => t.list_id === id ? { ...t, list_id: null } : t));
+    let prevLists: TodoList[] = [];
+    let prevTodos: Todo[] = [];
+    setLists(prev => { prevLists = prev; return prev.filter(l => l.id !== id); });
+    setTodos(prev => { prevTodos = prev; return prev.map(t => t.list_id === id ? { ...t, list_id: null } : t); });
     if (activeList.type === 'list' && activeList.id === id) {
       setActiveList({ type: 'smart', id: 'all' });
     }
@@ -281,6 +308,8 @@ export function useTodos(userId: string) {
       await deleteList(supabase, id);
     } catch (err) {
       console.error('[useTodos] removeList failed:', err);
+      setLists(prevLists);
+      setTodos(prevTodos);
       setError(err instanceof Error ? err.message : 'Failed to delete list');
     }
   }, [supabase, activeList]);

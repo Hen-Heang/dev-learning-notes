@@ -1,7 +1,10 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { CheckCircle2, Circle, Clock, ChevronRight } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { loadProgress, saveProgress } from "@/lib/supabase/progress";
 
 interface RoadmapPhase {
   phase: string;
@@ -9,7 +12,6 @@ interface RoadmapPhase {
   label: string;
   detail: string;
   tags: string[];
-  status: "done" | "active" | "upcoming";
 }
 
 const PHASES: RoadmapPhase[] = [
@@ -19,7 +21,6 @@ const PHASES: RoadmapPhase[] = [
     label: "Computer Science & Logic",
     detail: "Data Structures, Algorithms, Memory Management, and clean logic patterns.",
     tags: ["DS/Algo", "Logic", "Complexity"],
-    status: "done",
   },
   {
     phase: "02",
@@ -27,7 +28,6 @@ const PHASES: RoadmapPhase[] = [
     label: "Advanced Backend Systems",
     detail: "Microservices, Distributed Databases, Caching (Redis), and Message Queues.",
     tags: ["Java/Go", "Spring", "PostgreSQL", "Kafka"],
-    status: "done",
   },
   {
     phase: "03",
@@ -35,7 +35,6 @@ const PHASES: RoadmapPhase[] = [
     label: "Modern Frontend Mastery",
     detail: "Advanced React, Server Components, State Machines, and Design Systems.",
     tags: ["Next.js", "TypeScript", "Tailwind", "Shadcn"],
-    status: "active",
   },
   {
     phase: "04",
@@ -43,7 +42,6 @@ const PHASES: RoadmapPhase[] = [
     label: "Cloud Architecture & DevOps",
     detail: "Docker, Kubernetes, AWS/Vercel deployment, and automated CI/CD pipelines.",
     tags: ["Docker", "K8s", "AWS", "CI/CD"],
-    status: "upcoming",
   },
   {
     phase: "05",
@@ -51,7 +49,6 @@ const PHASES: RoadmapPhase[] = [
     label: "Product Engineering",
     detail: "System design, high-scale performance, security auditing, and lead engineer skills.",
     tags: ["System Design", "Security", "Leadership"],
-    status: "upcoming",
   },
 ];
 
@@ -59,49 +56,117 @@ const STATUS_CONFIG = {
   done: {
     icon: CheckCircle2,
     iconColor: "text-emerald-400",
-    dotColor: "bg-emerald-400",
-    lineColor: "bg-emerald-400/40",
     labelColor: "text-zinc-300",
     badge: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
     badgeText: "Completed",
+    card: "border-zinc-800/60 bg-zinc-900/20",
   },
   active: {
     icon: Clock,
     iconColor: "text-amber-400",
-    dotColor: "bg-amber-400",
-    lineColor: "bg-zinc-800",
     labelColor: "text-zinc-100",
     badge: "bg-amber-400/10 text-amber-400 border-amber-400/20",
     badgeText: "In Progress",
+    card: "border-amber-400/20 bg-amber-400/[0.03]",
   },
   upcoming: {
     icon: Circle,
     iconColor: "text-zinc-600",
-    dotColor: "bg-zinc-700",
-    lineColor: "bg-zinc-800",
     labelColor: "text-zinc-500",
     badge: "bg-zinc-800/60 text-zinc-600 border-zinc-700/40",
     badgeText: "Upcoming",
+    card: "border-zinc-800/40 bg-transparent",
   },
 };
 
 const TAG_COLOR: Record<string, string> = {
   "DS/Algo": "text-orange-400/80 bg-orange-400/8 border-orange-400/15",
   Logic: "text-sky-400/80 bg-sky-400/8 border-sky-400/15",
+  Complexity: "text-sky-400/80 bg-sky-400/8 border-sky-400/15",
   "Java/Go": "text-emerald-400/80 bg-emerald-400/8 border-emerald-400/15",
   Spring: "text-emerald-400/80 bg-emerald-400/8 border-emerald-400/15",
   PostgreSQL: "text-sky-400/80 bg-sky-400/8 border-sky-400/15",
+  Kafka: "text-orange-400/80 bg-orange-400/8 border-orange-400/15",
   "Next.js": "text-white/80 bg-white/8 border-white/15",
   TypeScript: "text-blue-400/80 bg-blue-400/8 border-blue-400/15",
+  Tailwind: "text-sky-400/80 bg-sky-400/8 border-sky-400/15",
+  Shadcn: "text-zinc-300/80 bg-zinc-700/20 border-zinc-600/20",
   Docker: "text-blue-400/80 bg-blue-400/8 border-blue-400/15",
+  "K8s": "text-blue-400/80 bg-blue-400/8 border-blue-400/15",
   AWS: "text-amber-400/80 bg-amber-400/8 border-amber-400/15",
+  "CI/CD": "text-violet-400/80 bg-violet-400/8 border-violet-400/15",
   "System Design": "text-violet-400/80 bg-violet-400/8 border-violet-400/15",
+  Security: "text-red-400/80 bg-red-400/8 border-red-400/15",
+  Leadership: "text-emerald-400/80 bg-emerald-400/8 border-emerald-400/15",
 };
 
-const doneCount = PHASES.filter((p) => p.status === "done").length;
-const progressPct = Math.round((doneCount / PHASES.length) * 100);
+const LS_KEY = "roadmap-progress";
+const TRACKER_KEY = "roadmap";
+const DEFAULT_DONE = ["01", "02"];
+
+function getPhaseStatus(
+  phaseId: string,
+  donePhases: Set<string>
+): "done" | "active" | "upcoming" {
+  if (donePhases.has(phaseId)) return "done";
+  const firstUndone = PHASES.find((p) => !donePhases.has(p.phase));
+  if (firstUndone?.phase === phaseId) return "active";
+  return "upcoming";
+}
 
 export function Roadmap() {
+  const [donePhases, setDonePhases] = useState<Set<string>>(new Set());
+  const [mounted, setMounted] = useState(false);
+  const [supabase] = useState(() => createClient());
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load from localStorage then sync from Supabase
+  useEffect(() => {
+    const raw = localStorage.getItem(LS_KEY);
+    const local: string[] = raw ? JSON.parse(raw) : DEFAULT_DONE;
+    setDonePhases(new Set(local));
+
+    loadProgress(supabase, TRACKER_KEY)
+      .then((remote) => {
+        if (remote.length > 0) {
+          setDonePhases(new Set(remote));
+          localStorage.setItem(LS_KEY, JSON.stringify(remote));
+        } else if (!raw) {
+          // First time: persist defaults
+          localStorage.setItem(LS_KEY, JSON.stringify(DEFAULT_DONE));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setMounted(true));
+  }, [supabase]);
+
+  // Save whenever donePhases changes
+  useEffect(() => {
+    if (!mounted) return;
+    const arr = [...donePhases];
+    localStorage.setItem(LS_KEY, JSON.stringify(arr));
+
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      saveProgress(supabase, TRACKER_KEY, arr).catch(() => {});
+    }, 800);
+  }, [donePhases, mounted, supabase]);
+
+  function togglePhase(phaseId: string) {
+    setDonePhases((prev) => {
+      const next = new Set(prev);
+      if (next.has(phaseId)) {
+        next.delete(phaseId);
+      } else {
+        next.add(phaseId);
+      }
+      return next;
+    });
+  }
+
+  const doneCount = donePhases.size;
+  const progressPct = Math.round((doneCount / PHASES.length) * 100);
+
   return (
     <section className="mt-14">
       {/* Section header */}
@@ -129,12 +194,12 @@ export function Roadmap() {
 
       {/* Timeline */}
       <div className="relative">
-        {/* Vertical line */}
         <div className="absolute left-[19px] top-6 bottom-6 w-px bg-zinc-800 hidden sm:block" />
 
         <div className="space-y-3">
           {PHASES.map((phase, i) => {
-            const cfg = STATUS_CONFIG[phase.status];
+            const status = getPhaseStatus(phase.phase, donePhases);
+            const cfg = STATUS_CONFIG[status];
             const Icon = cfg.icon;
 
             return (
@@ -145,18 +210,13 @@ export function Roadmap() {
                 transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
               >
                 <div
-                  className={`relative flex gap-4 p-4 rounded-xl border transition-all duration-200 ${
-                    phase.status === "active"
-                      ? "border-amber-400/20 bg-amber-400/[0.03]"
-                      : phase.status === "done"
-                      ? "border-zinc-800/60 bg-zinc-900/20"
-                      : "border-zinc-800/40 bg-transparent"
-                  }`}
+                  onClick={() => togglePhase(phase.phase)}
+                  className={`relative flex gap-4 p-4 rounded-xl border transition-all duration-200 cursor-pointer hover:opacity-80 ${cfg.card}`}
                 >
                   {/* Icon */}
                   <div className="relative z-10 shrink-0 mt-0.5">
                     <Icon size={20} className={cfg.iconColor} />
-                    {phase.status === "active" && (
+                    {status === "active" && (
                       <motion.div
                         className="absolute inset-0 rounded-full bg-amber-400/20"
                         animate={{ scale: [1, 1.6, 1], opacity: [0.6, 0, 0.6] }}
@@ -171,9 +231,7 @@ export function Roadmap() {
                       <span className="text-[10px] font-mono text-zinc-600">Phase {phase.phase}</span>
                       <span className="text-[10px] font-mono text-zinc-700">·</span>
                       <span className="text-[10px] font-mono text-zinc-600">{phase.week}</span>
-                      <span
-                        className={`ml-auto text-[10px] font-mono px-2 py-0.5 rounded-full border ${cfg.badge}`}
-                      >
+                      <span className={`ml-auto text-[10px] font-mono px-2 py-0.5 rounded-full border ${cfg.badge}`}>
                         {cfg.badgeText}
                       </span>
                     </div>
@@ -195,7 +253,7 @@ export function Roadmap() {
                   </div>
 
                   {/* Arrow for active */}
-                  {phase.status === "active" && (
+                  {status === "active" && (
                     <div className="shrink-0 self-center">
                       <ChevronRight size={14} className="text-amber-400/60" />
                     </div>

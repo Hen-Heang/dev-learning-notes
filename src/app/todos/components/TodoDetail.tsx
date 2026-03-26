@@ -45,17 +45,15 @@ export function TodoDetail({ todo, lists, onClose, onSave, onDelete }: Props) {
 
   // Pass overrides to avoid stale-closure issues when saving immediately
   // after setState (priority / list selectors).
-  function flush(overrides?: { priority?: Priority; list_id?: string | null }) {
+  function flush(overrides?: { priority?: Priority; list_id?: string | null; due_date?: string | null; due_time?: string | null }) {
     if (!todo) return;
     onSave(todo.id, {
       title:    title.trim() || todo.title,
       notes:    notes.trim() || null,
-      due_date: dueDate || null,
-      due_time: dueTime || null,
+      due_date: overrides !== undefined && 'due_date' in overrides ? overrides.due_date : (dueDate || null),
+      due_time: overrides !== undefined && 'due_time' in overrides ? overrides.due_time : (dueTime || null),
       priority: overrides?.priority ?? priority,
-      list_id:  overrides !== undefined && 'list_id' in overrides
-        ? overrides.list_id
-        : (listId || null),
+      list_id:  overrides !== undefined && 'list_id' in overrides ? overrides.list_id : (listId || null),
     });
   }
 
@@ -160,7 +158,7 @@ export function TodoDetail({ todo, lists, onClose, onSave, onDelete }: Props) {
                 />
                 {dueDate && (
                   <button
-                    onClick={() => { setDueDate(''); setDueTime(''); setTimeout(flush, 0); }}
+                    onClick={() => { setDueDate(''); setDueTime(''); flush({ due_date: null, due_time: null }); }}
                     className="p-2 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                   >
                     <X size={16} />
